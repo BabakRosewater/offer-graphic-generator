@@ -34,6 +34,7 @@ Cloudflare Pages static app for generating offer graphics from Clark Hyundai pur
 For **payment**, **APR**, and **term**:
 - Use **Selected Terms** when visible.
 - Do **not** use lowest matrix payment unless Selected Terms is missing.
+- If Selected Terms payment is a range, use the lower value in that Selected Terms range.
 
 This rule is enforced in deterministic normalization and explicitly required in Gemini prompt instructions.
 

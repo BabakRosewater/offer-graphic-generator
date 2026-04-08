@@ -141,6 +141,7 @@ Return ONLY strict JSON with this schema:
 Rules:
 - payment, apr, and term must come from Selected Terms when visible.
 - Do NOT choose the lowest payment matrix option unless Selected Terms is missing.
+- If Selected Terms payment is shown as a range (example: $429 - $464), use the lower payment value.
 - Use numbers for numeric fields; use 0 when unknown.
 - Use empty string for unknown text fields.
 - No markdown, no comments, no prose.`;
