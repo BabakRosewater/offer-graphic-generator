@@ -1,468 +1,342 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Offer Graphic Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <style>
-      :root {
-        --bg: #dfe5ec;
-        --panel: #eef2f7;
-        --card: #ffffff;
-        --text: #10233f;
-        --muted: #5b6f8f;
-        --line: #d6deea;
-        --accent: #213f80;
-        --accent-dark: #142c5a;
-        --green: #08a045;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      }
-      .app {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 0 12px;
-        display: grid;
-        grid-template-columns: 360px 1fr;
-        gap: 18px;
-      }
-      .panel {
-        background: var(--panel);
-        border: 1px solid #cdd6e4;
-        border-radius: 12px;
-        overflow: hidden;
-      }
-      .panel-head {
-        padding: 14px 16px;
-        border-bottom: 1px solid #dbe3ef;
-        font-weight: 700;
-        color: #1d3f82;
-      }
-      .panel-body { padding: 16px; }
-      .stack { display: grid; gap: 12px; }
-      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-      label { display: grid; gap: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #4f658a; }
-      input {
-        width: 100%;
-        height: 42px;
-        border-radius: 8px;
-        border: 1px solid #b8c7de;
-        background: #f6f9fd;
-        padding: 0 12px;
-        color: #122c56;
-        font-size: 20px;
-      }
-      input[type="number"] { font-size: 24px; font-weight: 700; }
-      input#payment { color: #0e2f73; }
-      .muted { color: #6983ac; font-size: 13px; }
-      .error { color: #9f1523; min-height: 18px; font-size: 13px; }
-      .btn {
-        width: 100%;
-        height: 50px;
-        border: 0;
-        border-radius: 10px;
-        background: #23438a;
-        color: #fff;
-        font-size: 26px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      .btn[disabled] { opacity: 0.7; cursor: wait; }
-
-      .preview-shell {
-        background: #e8edf5;
-        border: 1px dashed #c4d0e2;
-        border-radius: 14px;
-        padding: 24px;
-        min-height: 860px;
-        display: flex;
-        justify-content: center;
-      }
-      #previewCard {
-        width: 100%;
-        max-width: 500px;
-        background: #fff;
-        border: 1px solid #d8dfeb;
-      }
-      .pv-head { text-align: center; padding: 28px 20px 16px; }
-      .pv-title { font-weight: 900; font-size: 42px; letter-spacing: 0.01em; }
-      .pv-sub { color: var(--muted); margin-top: 6px; font-size: 28px; }
-      .pv-vehicle {
-        margin: 18px 20px 14px;
-        background: #eef2f7;
-        border-radius: 10px;
-        text-align: center;
-        padding: 10px;
-        font-size: 31px;
-        font-weight: 700;
-      }
-      .pv-block { margin: 0 24px; }
-      .pv-line {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        border-bottom: 1px solid #e2e8f2;
-        padding: 11px 0;
-        font-size: 36px;
-      }
-      .pv-line b:last-child { color: #081b40; }
-      .pv-line.discount b { color: var(--green); }
-      .pv-line.total { border-bottom: 2px solid #0f234a; }
-      .pv-fin {
-        display: flex;
-        justify-content: space-between;
-        padding: 16px 0 8px;
-        font-size: 27px;
-        color: #344f79;
-        font-weight: 700;
-      }
-      .pv-fin span:first-child { text-transform: uppercase; letter-spacing: 0.06em; }
-      .plan {
-        margin: 14px 24px 0;
-        border-radius: 24px;
-        padding: 26px;
-        color: #fff;
-        text-align: center;
-        background: linear-gradient(160deg, var(--accent), var(--accent-dark));
-      }
-      .plan small { font-size: 20px; letter-spacing: 0.08em; font-weight: 700; }
-      .plan-payment { font-size: 98px; line-height: 1; font-weight: 900; margin: 8px 0; }
-      .plan-payment .dollar { font-size: 52px; vertical-align: baseline; }
-      .plan hr { border: 0; border-top: 1px solid rgba(255,255,255,.3); margin: 16px 0; }
-      .plan-terms { font-size: 46px; font-weight: 800; }
-      .plan-term { font-size: 38px; font-weight: 700; }
-      .pv-foot {
-        margin-top: 20px;
-        text-align: center;
-        font-size: 18px;
-        color: #95a5bf;
-        padding: 16px 20px 22px;
-        background: #f4f7fb;
-        border-top: 1px solid #e1e7f0;
-      }
-      .grid2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin: 14px 24px 0;
-      }
-      .box {
-        border-radius: 16px;
-        padding: 14px;
-        border: 1px solid #d6e1ee;
-        background: #f4f8fd;
-      }
-      .box h4 {
-        margin: 0 0 8px;
-        font-size: 18px;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        color: #1c4e90;
-      }
-      .box-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #dde6f2; font-size:24px; }
-      .box-row:last-child { border-bottom:0; }
-      .trade { background:#edf7ee; border-color:#d4e8d7; }
-      .trade h4 { color:#1e7c37; }
-      .deal { background:#eef4fb; }
-      .negative { color:#b42318; }
-      .positive { color:#087443; }
-      @media (max-width: 1000px) {
-        .app { grid-template-columns: 1fr; }
-        .grid2 { grid-template-columns: 1fr; }
-      }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .hidden-view { display: none !important; }
     </style>
-  </head>
-  <body>
-    <div class="app">
-      <section class="panel">
-        <div class="panel-head">✎ Review Extracted Data</div>
-        <div class="panel-body stack">
-          <label>
-            Upload PDF or image
-            <input id="fileInput" type="file" accept="application/pdf,image/*" style="font-size:14px;font-weight:500" />
-          </label>
-          <button id="extractBtn" class="btn" type="button">Extract Deal Data</button>
-          <div id="status" class="muted"></div>
-          <div id="error" class="error"></div>
+</head>
+<body class="bg-slate-100 p-4 md:p-8 font-sans text-slate-800 min-h-screen">
 
-          <div class="stack" id="reviewForm">
-            <label>Customer Name <input id="customerName" /></label>
-            <label>Vehicle <input id="vehicleName" /></label>
-            <div class="row">
-              <label>Retail Price <input id="retailPrice" type="number" step="0.01" /></label>
-              <label>Discount <input id="discount" type="number" step="0.01" /></label>
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-blue-900 rounded-lg text-white shadow-sm">
+                    <i data-lucide="layout-template" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Offer Graphic Generator</h1>
+                    <p class="text-slate-500">Transform internal quotes into mobile-friendly summaries.</p>
+                </div>
             </div>
-            <label>Trade Equity (+/-) <input id="tradeEquity" type="number" step="0.01" /></label>
-            <label>Amount Financed <input id="amountFinanced" type="number" step="0.01" /></label>
-            <label>Monthly Payment <input id="payment" type="number" step="0.01" /></label>
-            <div class="row">
-              <label>APR % <input id="apr" type="number" step="0.01" /></label>
-              <label>Term (mo) <input id="term" type="number" /></label>
+            <button id="btn-start-over" class="hidden-view text-sm font-medium text-slate-500 hover:text-blue-600 flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 transition-colors">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Start Over
+            </button>
+        </header>
+
+        <div id="view-upload" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center min-h-[500px]">
+            <div id="drop-zone" class="w-full max-w-2xl border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-center p-12 hover:bg-slate-50 transition-colors cursor-pointer">
+                <div class="bg-blue-50 text-blue-900 p-5 rounded-full mb-6">
+                    <i data-lucide="upload" class="w-10 h-10"></i>
+                </div>
+                <h3 class="font-bold text-2xl text-slate-800 mb-2">Upload Purchase Agreement</h3>
+                <p class="text-slate-500 mb-8 max-w-md">Upload your internal deal sheet (PDF or Image). The system will extract the data and build a customer-facing summary card.</p>
+                <div class="flex gap-2 justify-center mb-6">
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">PDF</span>
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">PNG</span>
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">JPG</span>
+                </div>
+                <button class="bg-blue-900 text-white px-6 py-3 rounded-lg font-medium shadow-sm hover:bg-blue-800 transition-colors pointer-events-none">Browse Files</button>
+                <input type="file" id="file-input" accept="application/pdf, image/*" class="hidden" />
             </div>
-            <div class="row">
-              <label>Customer Phone <input id="customerPhone" /></label>
-              <label>Stock Number <input id="stockNumber" /></label>
-            </div>
-            <div class="row">
-              <label>VIN <input id="vin" /></label>
-              <label>Vehicle Color <input id="vehicleColor" /></label>
-            </div>
-            <div class="row">
-              <label>Mileage <input id="vehicleMileage" type="number" /></label>
-              <label>Sales Price <input id="salesPrice" type="number" step="0.01" /></label>
-            </div>
-            <div class="row">
-              <label>Total Sales Price <input id="totalSalesPrice" type="number" step="0.01" /></label>
-              <label>Trade Allowance <input id="tradeAllowance" type="number" step="0.01" /></label>
-            </div>
-            <label>Trade Payoff <input id="tradePayoff" type="number" step="0.01" /></label>
-          </div>
         </div>
-        <div style="padding:14px;border-top:1px solid #dbe3ef;background:#e7edf5">
-          <button id="downloadBtn" class="btn" type="button">⭳ Download Graphic</button>
-        </div>
-      </section>
 
-      <section class="preview-shell">
-        <div id="previewCard">
-          <div class="pv-head">
-            <div class="pv-title">YOUR OFFER SUMMARY</div>
-            <div class="pv-sub">Prepared for <span id="pvCustomer">Customer</span></div>
-          </div>
-          <div id="pvVehicle" class="pv-vehicle">Vehicle Description</div>
-
-          <div class="pv-block">
-            <div class="pv-line"><b>Retail Price:</b><b id="pvRetailPrice">$0</b></div>
-            <div class="pv-line discount"><b>Discount:</b><b id="pvDiscount">-$0</b></div>
-            <div class="pv-line total"><b>Sale Price:</b><b id="pvSalePrice">$0</b></div>
-            <div class="pv-fin"><span>TOTAL FINANCED:</span><span id="pvAmountFinanced">$0</span></div>
-          </div>
-
-          <div class="plan">
-            <small>SELECTED PAYMENT PLAN</small>
-            <div class="plan-payment"><span class="dollar">$</span><span id="pvPayment">0</span></div>
-            <div style="font-size:36px;font-weight:600">per month</div>
-            <hr>
-            <div class="plan-terms"><span id="pvApr">0</span>% APR</div>
-            <div class="plan-term"><span id="pvTerm">0</span> months</div>
-          </div>
-
-          <div class="grid2">
-            <div class="box">
-              <h4>Payment Options</h4>
-              <div id="pvPaymentOptions"></div>
+        <div id="view-extracting" class="hidden-view bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center min-h-[500px]">
+            <div class="flex flex-col items-center text-center">
+                <i data-lucide="loader-2" class="w-12 h-12 text-blue-900 spinner mb-6"></i>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Processing Document...</h3>
+                <p class="text-slate-500" id="extraction-status">Analyzing document securely...</p>
             </div>
-            <div class="box trade">
-              <h4>Trade-in Summary</h4>
-              <div class="box-row"><span>Trade Allowance</span><b id="pvTradeAllowance">$0</b></div>
-              <div class="box-row"><span>Trade Payoff</span><b id="pvTradePayoff">$0</b></div>
-              <div class="box-row"><span>Trade Equity</span><b id="pvTradeEquity">$0</b></div>
-            </div>
-          </div>
-
-          <div class="box deal" style="margin:12px 24px 0">
-            <h4>Deal Summary</h4>
-            <div class="box-row"><span>Sale Price</span><b id="pvDealSalePrice">$0</b></div>
-            <div class="box-row"><span>Government Fees</span><b id="pvDealGovFees">$0</b></div>
-            <div class="box-row"><span>Total Sales Price</span><b id="pvDealTotalSalesPrice">$0</b></div>
-            <div class="box-row"><span>Trade Equity</span><b id="pvDealTradeEquity">$0</b></div>
-            <div class="box-row"><span>Cash Down</span><b id="pvDealCashDown">$0</b></div>
-            <div class="box-row"><span>Amount Financed</span><b id="pvDealAmountFinanced">$0</b></div>
-          </div>
-
-          <div class="pv-foot">Payments are estimates and subject to approved credit and program eligibility. Excludes tax, title, and license fees.</div>
         </div>
-      </section>
+
+        <div id="view-review" class="hidden-view flex flex-col lg:flex-row gap-8 items-start">
+            <div class="w-full lg:w-[350px] flex-shrink-0 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-slate-100 bg-blue-50/50 flex justify-between items-center">
+                    <h2 class="font-semibold text-blue-900 flex items-center gap-2"><i data-lucide="file-image" class="w-4 h-4"></i> Review Extracted Data</h2>
+                </div>
+                <div class="p-6 space-y-4 flex-1 overflow-y-auto max-h-[700px] custom-scrollbar">
+                    <form id="data-form" class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Customer Name</label><div class="relative"><i data-lucide="user" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="text" id="in-customerName" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Vehicle</label><div class="relative"><i data-lucide="car" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="text" id="in-vehicleName" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Retail Price</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-retailPrice" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Discount</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-discount" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Allowance</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradeAllowance" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Payoff</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradePayoff" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Equity (+/-)</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradeEquity" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Amount Financed</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-amountFinanced" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Monthly Payment</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-payment" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none text-lg font-bold text-blue-900" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">APR %</label><div class="relative"><i data-lucide="percent" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" step="0.01" id="in-apr" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Term (Mo)</label><div class="relative"><i data-lucide="calendar" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-term" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                    </form>
+                </div>
+                <div class="p-4 bg-slate-50 border-t border-slate-100">
+                    <button id="btn-download" class="w-full py-4 px-4 bg-blue-900 hover:bg-blue-800 text-white rounded-xl font-medium text-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-900/20"><i data-lucide="download" id="icon-download" class="w-6 h-6"></i><i data-lucide="loader-2" id="icon-generating" class="w-6 h-6 spinner hidden-view"></i><span id="text-download">Download Graphic</span></button>
+                </div>
+            </div>
+
+            <div class="w-full flex-1 flex justify-center items-start bg-slate-200/50 rounded-3xl p-4 md:p-8 border border-slate-200 border-dashed overflow-x-auto">
+                <div id="graphic-canvas" class="bg-white w-full max-w-[700px] relative font-sans shadow-2xl overflow-hidden rounded-md border border-slate-100">
+                    <div class="flex justify-between items-stretch bg-white border-b-[6px] border-[#0f2846]"><div class="bg-[#0f2846] text-white px-8 py-5 flex items-center gap-3 rounded-br-[32px] w-[55%]"><i data-lucide="aperture" class="w-8 h-8 opacity-90"></i><span class="font-black text-2xl tracking-wider">CLARK HYUNDAI</span></div><div class="px-6 py-4 flex items-center gap-3 text-[#1e4b82] w-[45%] justify-end"><i data-lucide="check-circle-2" class="w-10 h-10"></i><span class="font-bold text-sm leading-tight text-left uppercase">Your Personalized<br/>Offer Summary</span></div></div>
+                    <div class="flex p-8 items-center border-b border-slate-100"><div class="flex-1 pr-4"><h2 id="out-vehYearMake" class="text-3xl text-[#1e4b82] font-semibold mb-1">2026 Hyundai</h2><h1 id="out-vehModel" class="text-5xl text-[#0f2846] font-black tracking-tight leading-none mb-3">Elantra Hybrid</h1><p id="out-customerNameDisplay" class="text-slate-500 font-medium tracking-wide">Prepared for Customer</p></div><div class="w-[250px] h-[140px] flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-slate-200 text-slate-400"><i data-lucide="car-front" class="w-16 h-16 mb-2 opacity-50"></i><span class="text-xs font-bold uppercase tracking-wider opacity-60">Vehicle Image</span></div></div>
+                    <div class="mx-8 mt-6"><div class="flex items-stretch border border-slate-200 rounded-2xl overflow-hidden shadow-sm relative"><div class="flex-1 text-center py-4 px-2"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Retail Price</div><div id="out-retailPrice" class="text-3xl font-black text-slate-800">$0</div></div><div class="absolute left-1/3 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden" id="badge-discount"><div class="bg-slate-300 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xl shadow-sm">-</div></div><div class="flex-1 text-center py-4 px-2 bg-slate-50" id="col-discount"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Discount</div><div id="out-discount" class="text-3xl font-black text-green-600">-$0</div></div><div class="absolute left-2/3 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden" id="badge-equals"><div class="bg-blue-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xl shadow-sm border-2 border-white">=</div></div><div class="flex-1 text-center py-4 px-2 bg-[#0f2846] text-white"><div class="text-[11px] font-bold text-white/80 uppercase tracking-widest mb-1">Sale Price</div><div id="out-salePrice" class="text-4xl font-black">$0</div></div></div><div id="out-saveRibbon" class="text-center mt-4"><span class="inline-flex items-center gap-2 bg-blue-50 text-[#1e4b82] px-5 py-2 rounded-full font-bold text-sm shadow-sm border border-blue-100"><i data-lucide="tag" class="w-4 h-4 fill-current"></i> YOU SAVE <span id="out-discountAmt" class="text-lg">$0</span> <span class="text-slate-500 font-medium text-xs ml-1">OFF THE RETAIL PRICE!</span></span></div></div>
+                    <div class="mx-8 mt-6 grid grid-cols-2 gap-6"><div class="bg-[#1e4b82] rounded-2xl p-6 text-white flex flex-col justify-center shadow-lg relative overflow-hidden"><div class="text-xs font-bold text-white/80 uppercase tracking-wider mb-4 relative z-10">Your Estimated Payment</div><div class="flex items-end gap-5 relative z-10"><div><div class="flex items-start leading-none tracking-tighter"><span class="text-4xl font-bold mt-2 mr-1">$</span><span id="out-payment" class="text-[80px] font-black">0</span></div><div class="text-sm font-bold uppercase tracking-wider mt-2 text-white/90">Per Month</div></div><div class="w-px h-20 bg-white/20 mb-2"></div><div class="pb-2"><div class="text-xs font-bold text-white/80 uppercase tracking-widest mb-1">At</div><div class="text-4xl font-black leading-none mb-1"><span id="out-apr">0</span>%</div><div class="text-sm font-bold uppercase tracking-wider text-white/90">APR</div></div></div><div class="mt-6 text-center text-sm font-bold tracking-widest text-white bg-black/20 py-2.5 rounded-lg border border-white/10 relative z-10"><i data-lucide="calendar" class="w-4 h-4 inline pb-0.5 mr-1"></i> FOR <span id="out-term">0</span> MONTHS</div></div><div class="border border-slate-200 rounded-2xl p-5 shadow-sm bg-white flex flex-col"><div class="text-xs font-bold text-slate-800 uppercase tracking-wider text-center border-b-2 border-slate-100 pb-3 mb-4">Payment Options</div><div class="flex-1 flex flex-col justify-center gap-4"><div class="flex justify-between items-center py-2"><div><div class="font-black text-2xl text-[#1e4b82]"><span id="out-opt1-term">0</span> <span class="text-sm tracking-wider uppercase text-[#1e4b82]/80">Months</span></div><div class="text-sm text-slate-500 font-bold mt-1"><span id="out-opt1-apr">0</span>% APR</div></div><div class="text-3xl font-black text-slate-800">$<span id="out-opt1-pmt">0</span> <span class="text-lg text-slate-400 font-semibold">/mo</span></div></div><div class="border-t border-slate-100 w-full"></div><div class="text-center py-2 text-xs font-medium text-slate-400">*Additional terms may be available.</div></div></div></div>
+                    <div class="mx-8 mt-6 grid grid-cols-2 gap-6 pb-6 border-b border-slate-200"><div id="section-trade" class="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl flex flex-col"><div class="p-4 border-b border-[#bbf7d0] flex items-center gap-2 text-green-800 font-black text-sm uppercase tracking-widest"><i data-lucide="refresh-cw" class="w-5 h-5"></i> Trade-In Summary</div><div class="p-5 space-y-4 flex-1 text-[15px]"><div class="flex justify-between font-bold text-slate-700"><span>Trade Allowance</span><span id="out-tradeAllowance" class="text-green-700">$0</span></div><div class="flex justify-between font-bold text-slate-700"><span>Trade Payoff</span><span id="out-tradePayoff" class="text-red-600">-$0</span></div><div class="pt-4 mt-2 border-t border-green-200/60 flex justify-between items-end"><div><div class="font-black text-green-800 uppercase tracking-wide">Trade Equity</div><div class="text-xs text-green-700/80 font-medium leading-tight mt-1">Rolled into your new loan</div></div><span id="out-tradeEquity" class="text-2xl font-black text-red-600">$0</span></div></div></div><div class="bg-blue-50/50 border border-blue-100 rounded-2xl flex flex-col overflow-hidden"><div class="p-4 border-b border-blue-100 flex items-center gap-2 text-[#1e4b82] font-black text-sm uppercase tracking-widest"><i data-lucide="file-text" class="w-5 h-5"></i> Deal Summary</div><div class="p-5 space-y-3 flex-1 text-[13px] font-bold text-slate-600"><div class="flex justify-between"><span>Sale Price</span><span id="out-summarySalePrice" class="text-slate-800">$0</span></div><div class="flex justify-between"><span>Total Sales Price</span><span id="out-summaryTotalSalesPrice" class="text-slate-800">$0</span></div><div id="row-summaryTradeEquity" class="flex justify-between"><span>Trade Equity (Rolled In)</span><span id="out-summaryTradeEquity" class="text-slate-800">$0</span></div></div><div class="bg-[#0f2846] px-5 py-4 flex justify-between items-center text-white"><span class="font-bold uppercase tracking-widest text-xs">Amount Financed</span><span id="out-amountFinanced" class="text-2xl font-black">$0</span></div></div></div>
+                    <div class="mx-8 py-6 flex justify-between items-center"><div class="flex items-center gap-3 text-slate-500 w-2/3"><i data-lucide="shield-check" class="w-10 h-10 text-blue-800 opacity-80 flex-shrink-0"></i><p class="text-[11px] leading-tight font-medium">Payments are estimates and subject to approved credit and program eligibility. Excludes tax, title, and license fees.</p></div><div class="text-right"><div class="text-xl font-serif italic text-[#1e4b82] font-medium">Thank you!</div><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">We appreciate your business.</div></div></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        lucide.createIcons();
 
-      const fields = [
-        "customerName","customerPhone","vehicleName","retailPrice","discount","tradeEquity",
-        "amountFinanced","payment","apr","term","stockNumber","vin","vehicleColor",
-        "vehicleMileage","salesPrice","totalSalesPrice","tradeAllowance","tradePayoff"
-      ];
-      let extraData = {
-        governmentFees: 0,
-        accessories: 0,
-        serviceContract: 0,
-        gap: 0,
-        procDocFees: 0,
-        cashDown: 0,
-        rebate: 0,
-        paymentOptions: [],
-      };
-
-      const num = (v) => Number(v || 0);
-      const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-      const currency = (n) => {
-        const v = num(n);
-        return v < 0 ? `-${usd.format(Math.abs(v))}` : usd.format(v);
-      };
-      const compact = (txt) => String(txt || "").replace(/,\s*body\s*type\s*:.*/i, "").replace(/\s+/g, " ").trim();
-
-      function updatePreview() {
-        const retail = num(document.getElementById("retailPrice").value);
-        const discount = num(document.getElementById("discount").value);
-        const salesPrice = num(document.getElementById("salesPrice").value) || (retail - discount);
-        document.getElementById("pvCustomer").textContent = document.getElementById("customerName").value || "Customer";
-        document.getElementById("pvVehicle").textContent = compact(document.getElementById("vehicleName").value) || "Vehicle Description";
-        document.getElementById("pvRetailPrice").textContent = currency(retail);
-        document.getElementById("pvDiscount").textContent = `-${currency(discount).replace("-", "")}`;
-        document.getElementById("pvSalePrice").textContent = currency(salesPrice);
-        document.getElementById("pvAmountFinanced").textContent = currency(document.getElementById("amountFinanced").value);
-        document.getElementById("pvPayment").textContent = Math.round(num(document.getElementById("payment").value));
-        document.getElementById("pvApr").textContent = num(document.getElementById("apr").value).toFixed(2).replace(/\.00$/, "");
-        document.getElementById("pvTerm").textContent = num(document.getElementById("term").value);
-
-        const tradeAllowance = num(document.getElementById("tradeAllowance").value);
-        const tradePayoff = num(document.getElementById("tradePayoff").value);
-        const tradeEquity = num(document.getElementById("tradeEquity").value);
-        document.getElementById("pvTradeAllowance").textContent = currency(tradeAllowance);
-        document.getElementById("pvTradePayoff").textContent = currency(tradePayoff);
-        const equityEl = document.getElementById("pvTradeEquity");
-        equityEl.textContent = currency(tradeEquity);
-        equityEl.className = tradeEquity < 0 ? "negative" : "positive";
-
-        document.getElementById("pvDealSalePrice").textContent = currency(salesPrice);
-        document.getElementById("pvDealGovFees").textContent = currency(extraData.governmentFees);
-        document.getElementById("pvDealTotalSalesPrice").textContent = currency(num(document.getElementById("totalSalesPrice").value));
-        document.getElementById("pvDealTradeEquity").textContent = currency(tradeEquity);
-        document.getElementById("pvDealCashDown").textContent = currency(extraData.cashDown);
-        document.getElementById("pvDealAmountFinanced").textContent = currency(document.getElementById("amountFinanced").value);
-
-        const options = Array.isArray(extraData.paymentOptions) ? extraData.paymentOptions.slice(0, 2) : [];
-        const rows = options.map((o) =>
-          `<div class="box-row"><span>${num(o.term)} mo • ${num(o.apr).toFixed(2).replace(/\.00$/, "")}%</span><b>${currency(o.payment)}/mo</b></div>`
-        ).join("");
-        document.getElementById("pvPaymentOptions").innerHTML = rows || `<div class="box-row"><span>Selected Terms</span><b>${currency(document.getElementById("payment").value)}/mo</b></div>`;
-      }
-
-      function setError(msg) {
-        document.getElementById("error").textContent = msg || "";
-      }
-
-      function fillForm(data) {
-        extraData = {
-          ...extraData,
-          governmentFees: num(data.governmentFees),
-          accessories: num(data.accessories),
-          serviceContract: num(data.serviceContract),
-          gap: num(data.gap),
-          procDocFees: num(data.procDocFees),
-          cashDown: num(data.cashDown),
-          rebate: num(data.rebate),
-          paymentOptions: Array.isArray(data.paymentOptions) ? data.paymentOptions : [],
+        let formData = {
+            customerName: '', vehicleName: '', retailPrice: 0, discount: 0,
+            tradeAllowance: 0, tradePayoff: 0, tradeEquity: 0,
+            amountFinanced: 0, payment: 0, apr: 0, term: 0,
+            salesPrice: 0, totalSalesPrice: 0
         };
-        for (const key of fields) {
-          const el = document.getElementById(key);
-          if (!el || data[key] == null) continue;
-          el.value = data[key];
-        }
-        updatePreview();
-      }
 
-      function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
+        const viewUpload = document.getElementById('view-upload');
+        const viewExtracting = document.getElementById('view-extracting');
+        const viewReview = document.getElementById('view-review');
+        const btnStartOver = document.getElementById('btn-start-over');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        const inputs = ['customerName', 'vehicleName', 'retailPrice', 'discount', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'salesPrice', 'totalSalesPrice'];
+        const numberFields = ['retailPrice', 'discount', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'salesPrice', 'totalSalesPrice'];
+
+        const formatCurrency = (amount) => {
+            const n = Number(amount || 0);
+            const v = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Math.abs(n));
+            return n < 0 ? `-${v}` : v;
+        };
+
+        function setViewState(state) {
+            viewUpload.classList.add('hidden-view');
+            viewExtracting.classList.add('hidden-view');
+            viewReview.classList.add('hidden-view');
+            btnStartOver.classList.add('hidden-view');
+            if (state === 'upload') viewUpload.classList.remove('hidden-view');
+            if (state === 'extracting') viewExtracting.classList.remove('hidden-view');
+            if (state === 'review') {
+                viewReview.classList.remove('hidden-view');
+                btnStartOver.classList.remove('hidden-view');
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+            });
+        }
+
+        async function convertPdfToImage(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport }).promise;
+            return canvas.toDataURL('image/png');
+        }
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-slate-50'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-slate-50'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-slate-50');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         });
-      }
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
 
-      async function convertPdfToImageDataUrl(file) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 2 });
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        await page.render({ canvasContext: context, viewport }).promise;
-        return canvas.toDataURL("image/png");
-      }
+        async function handleFile(file) {
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a PDF or an Image file (PNG/JPG).');
+                return;
+            }
 
-      fields.forEach((id) => document.getElementById(id).addEventListener("input", updatePreview));
-      updatePreview();
+            setViewState('extracting');
+            const statusText = document.getElementById('extraction-status');
+            try {
+                let base64Clean = '';
+                let mimeType = 'image/png';
+                if (file.type === 'application/pdf') {
+                    statusText.innerText = 'Converting PDF to image format...';
+                    const pdfDataUrl = await convertPdfToImage(file);
+                    base64Clean = pdfDataUrl.split(',')[1];
+                } else {
+                    const base64Data = await fileToBase64(file);
+                    base64Clean = base64Data.split(',')[1];
+                    mimeType = file.type;
+                }
 
-      document.getElementById("extractBtn").addEventListener("click", async () => {
-        setError("");
-        const statusEl = document.getElementById("status");
-        const file = document.getElementById("fileInput").files?.[0];
-        if (!file) {
-          setError("Please choose a PDF or image file first.");
-          return;
+                statusText.innerText = 'Extracting deal data...';
+                const response = await fetch('/api/extract', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ imageBase64: base64Clean, mimeType }),
+                });
+
+                const payload = await response.json();
+                if (!response.ok || !payload.ok) {
+                    throw new Error(payload.error || `Extraction failed (HTTP ${response.status})`);
+                }
+
+                updateFormData(payload.data || {});
+                setViewState('review');
+            } catch (err) {
+                console.error(err);
+                alert(err?.message || 'Error processing file. Please ensure it is a valid document.');
+                setViewState('upload');
+            }
         }
 
-        statusEl.textContent = "Extracting...";
-        try {
-          let dataUrl;
-          let mimeType;
-          if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-            statusEl.textContent = "Converting PDF first page to image...";
-            dataUrl = await convertPdfToImageDataUrl(file);
-            mimeType = "image/png";
-          } else {
-            dataUrl = await fileToBase64(file);
-            mimeType = file.type || "image/png";
-          }
-
-          const imageBase64 = String(dataUrl).split(",")[1];
-          if (!imageBase64) throw new Error("Unable to read image data from uploaded file.");
-
-          const response = await fetch("/api/extract", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ mimeType, imageBase64 }),
-          });
-
-          let payload = null;
-          try { payload = await response.json(); }
-          catch { payload = { ok: false, error: `Extraction failed (HTTP ${response.status}).` }; }
-
-          if (!response.ok || !payload.ok) {
-            throw new Error(payload.error || `Extraction failed (HTTP ${response.status}).`);
-          }
-
-          fillForm(payload.data || {});
-          statusEl.textContent = `Extraction complete (${payload.source_type || "unknown source"}).`;
-        } catch (err) {
-          statusEl.textContent = "";
-          setError(err?.message || "Extraction failed. Please review and enter values manually.");
+        function updateFormData(newData) {
+            formData = { ...formData, ...newData };
+            inputs.forEach(key => {
+                const input = document.getElementById(`in-${key}`);
+                if (input) input.value = formData[key] ?? '';
+            });
+            renderGraphic();
         }
-      });
 
-      document.getElementById("downloadBtn").addEventListener("click", async () => {
-        setError("");
-        const btn = document.getElementById("downloadBtn");
-        const old = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = "Rendering...";
-        try {
-          const canvas = await html2canvas(document.getElementById("previewCard"), {
-            backgroundColor: "#ffffff",
-            scale: 2.5,
-            useCORS: true,
-          });
-          const a = document.createElement("a");
-          a.href = canvas.toDataURL("image/png");
-          a.download = "offer-graphic.png";
-          a.click();
-        } finally {
-          btn.disabled = false;
-          btn.textContent = old;
+        document.getElementById('data-form').addEventListener('input', (e) => {
+            const key = e.target.id.replace('in-', '');
+            let value = e.target.value;
+            if (numberFields.includes(key)) value = Number(value) || 0;
+            formData[key] = value;
+            renderGraphic();
+        });
+
+        function renderGraphic() {
+            const vehName = formData.vehicleName || 'Vehicle Description';
+            const parts = vehName.trim().split(/\s+/);
+            const yearMake = parts.length > 2 ? `${parts[0]} ${parts[1]}` : vehName;
+            const model = parts.length > 2 ? parts.slice(2).join(' ') : '';
+
+            document.getElementById('out-vehYearMake').innerText = yearMake;
+            document.getElementById('out-vehModel').innerText = model;
+            document.getElementById('out-customerNameDisplay').innerText = formData.customerName ? `Prepared for ${formData.customerName}` : 'Prepared for Customer';
+
+            document.getElementById('out-retailPrice').innerText = formatCurrency(formData.retailPrice);
+            const salePrice = (Number(formData.salesPrice) || 0) > 0 ? Number(formData.salesPrice) : (Number(formData.retailPrice) || 0) - (Number(formData.discount) || 0);
+            document.getElementById('out-salePrice').innerText = formatCurrency(salePrice);
+
+            const colDiscount = document.getElementById('col-discount');
+            const badgeDiscount = document.getElementById('badge-discount');
+            const badgeEquals = document.getElementById('badge-equals');
+            const saveRibbon = document.getElementById('out-saveRibbon');
+
+            if ((Number(formData.discount) || 0) > 0) {
+                colDiscount.classList.remove('hidden-view');
+                badgeDiscount.classList.remove('hidden');
+                badgeEquals.classList.remove('hidden');
+                document.getElementById('out-discount').innerText = `-${formatCurrency(formData.discount).replace('-', '')}`;
+                saveRibbon.classList.remove('hidden-view');
+                document.getElementById('out-discountAmt').innerText = formatCurrency(formData.discount).replace('-', '');
+            } else {
+                colDiscount.classList.add('hidden-view');
+                badgeDiscount.classList.add('hidden');
+                badgeEquals.classList.add('hidden');
+                saveRibbon.classList.add('hidden-view');
+            }
+
+            document.getElementById('out-payment').innerText = Number(formData.payment) || 0;
+            document.getElementById('out-apr').innerText = Number(formData.apr) || 0;
+            document.getElementById('out-term').innerText = Number(formData.term) || 0;
+            document.getElementById('out-opt1-pmt').innerText = Number(formData.payment) || 0;
+            document.getElementById('out-opt1-apr').innerText = Number(formData.apr) || 0;
+            document.getElementById('out-opt1-term').innerText = Number(formData.term) || 0;
+
+            const sectionTrade = document.getElementById('section-trade');
+            if ((Number(formData.tradeAllowance) || 0) > 0 || (Number(formData.tradePayoff) || 0) > 0 || (Number(formData.tradeEquity) || 0) !== 0) {
+                sectionTrade.classList.remove('hidden-view');
+                document.getElementById('out-tradeAllowance').innerText = formatCurrency(formData.tradeAllowance);
+                document.getElementById('out-tradePayoff').innerText = formatCurrency(-Math.abs(Number(formData.tradePayoff) || 0));
+                const tradeEl = document.getElementById('out-tradeEquity');
+                tradeEl.innerText = formatCurrency(formData.tradeEquity);
+                tradeEl.className = `text-2xl font-black ${(Number(formData.tradeEquity) || 0) < 0 ? 'text-red-600' : 'text-green-600'}`;
+                document.getElementById('row-summaryTradeEquity').classList.remove('hidden-view');
+                document.getElementById('out-summaryTradeEquity').innerText = formatCurrency(formData.tradeEquity);
+            } else {
+                sectionTrade.classList.add('hidden-view');
+                document.getElementById('row-summaryTradeEquity').classList.add('hidden-view');
+            }
+
+            document.getElementById('out-summarySalePrice').innerText = formatCurrency(salePrice);
+            const totalSales = (Number(formData.totalSalesPrice) || 0) > 0 ? Number(formData.totalSalesPrice) : salePrice;
+            document.getElementById('out-summaryTotalSalesPrice').innerText = formatCurrency(totalSales);
+            document.getElementById('out-amountFinanced').innerText = formatCurrency(formData.amountFinanced);
+            lucide.createIcons();
         }
-      });
+
+        document.getElementById('btn-download').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-download');
+            const iconD = document.getElementById('icon-download');
+            const iconG = document.getElementById('icon-generating');
+            const text = document.getElementById('text-download');
+            btn.classList.add('opacity-80', 'pointer-events-none');
+            iconD.classList.add('hidden-view');
+            iconG.classList.remove('hidden-view');
+            text.innerText = 'Rendering...';
+            try {
+                const canvas = await html2canvas(document.getElementById('graphic-canvas'), { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = image;
+                const safeName = (formData.customerName || 'customer').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                link.download = `${safeName}_offer_summary.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error('Export error:', err);
+                alert('Failed to export image.');
+            } finally {
+                btn.classList.remove('opacity-80', 'pointer-events-none');
+                iconD.classList.remove('hidden-view');
+                iconG.classList.add('hidden-view');
+                text.innerText = 'Download Graphic';
+            }
+        });
+
+        btnStartOver.addEventListener('click', () => {
+            setViewState('upload');
+            fileInput.value = '';
+            updateFormData({
+                customerName: '', vehicleName: '', retailPrice: 0, discount: 0,
+                tradeAllowance: 0, tradePayoff: 0, tradeEquity: 0,
+                amountFinanced: 0, payment: 0, apr: 0, term: 0,
+                salesPrice: 0, totalSalesPrice: 0
+            });
+        });
+
+        updateFormData(formData);
     </script>
-  </body>
+</body>
 </html>
