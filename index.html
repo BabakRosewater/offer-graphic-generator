@@ -66,9 +66,16 @@
         border-radius: 12px;
         padding: 16px;
         background: white;
+        min-height: 240px;
       }
       .price { font-size: 26px; font-weight: 700; }
       .meta { font-size: 13px; color: var(--muted); }
+      .vehicle-title {
+        font-weight: 700;
+        margin-bottom: 8px;
+        line-height: 1.2;
+        font-size: 20px;
+      }
       @media (max-width: 900px) {
         .container { grid-template-columns: 1fr; }
       }
@@ -135,7 +142,7 @@
       <aside class="panel">
         <h2 style="margin-top:0">Preview</h2>
         <div id="previewCard">
-          <div id="pvVehicle" style="font-weight:700; margin-bottom:8px;">Vehicle</div>
+          <div id="pvVehicle" class="vehicle-title">Vehicle</div>
           <div id="pvCustomer" class="meta" style="margin-bottom:10px;">Customer</div>
           <div class="price" id="pvPayment">$0/mo</div>
           <div class="meta" id="pvTerms">0 months • 0% APR</div>
@@ -157,10 +164,20 @@
       ];
 
       const num = (v) => Number(v || 0);
-      const currency = (n) => `$${num(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+      const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+      const currency = (n) => {
+        const value = num(n);
+        return value < 0 ? `-${usd.format(Math.abs(value))}` : usd.format(value);
+      };
+      const cleanVehicleForCard = (name) =>
+        String(name || "")
+          .replace(/,\s*body\s*type\s*:.*/i, "")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 48);
 
       function updatePreview() {
-        document.getElementById("pvVehicle").textContent = document.getElementById("vehicleName").value || "Vehicle";
+        document.getElementById("pvVehicle").textContent = cleanVehicleForCard(document.getElementById("vehicleName").value) || "Vehicle";
         document.getElementById("pvCustomer").textContent = document.getElementById("customerName").value || "Customer";
         document.getElementById("pvPayment").textContent = `${currency(document.getElementById("payment").value)}/mo`;
         document.getElementById("pvTerms").textContent = `${num(document.getElementById("term").value)} months • ${num(document.getElementById("apr").value)}% APR`;
@@ -262,12 +279,21 @@
 
       document.getElementById("downloadBtn").addEventListener("click", async () => {
         setError("");
+        const btn = document.getElementById("downloadBtn");
+        const prevLabel = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Rendering...";
         const card = document.getElementById("previewCard");
-        const canvas = await html2canvas(card, { backgroundColor: "#ffffff", scale: 2 });
-        const a = document.createElement("a");
-        a.href = canvas.toDataURL("image/png");
-        a.download = "offer-graphic.png";
-        a.click();
+        try {
+          const canvas = await html2canvas(card, { backgroundColor: "#ffffff", scale: 3, useCORS: true });
+          const a = document.createElement("a");
+          a.href = canvas.toDataURL("image/png");
+          a.download = "offer-graphic.png";
+          a.click();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = prevLabel;
+        }
       });
     </script>
   </body>
