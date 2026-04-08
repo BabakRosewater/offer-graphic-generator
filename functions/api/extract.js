@@ -18,9 +18,22 @@ async function inflateIfNeeded(streamText, streamBytes) {
     return "";
   }
 
-  const ds = new DecompressionStream("deflate");
-  const decompressed = new Response(new Blob([streamBytes]).stream().pipeThrough(ds));
-  return await decompressed.text();
+  try {
+    const ds = new DecompressionStream("deflate");
+    const decompressed = new Response(new Blob([streamBytes]).stream().pipeThrough(ds));
+    return await decompressed.text();
+  } catch {
+    // Some PDFs use Flate variations unsupported by the runtime decoder.
+    return "";
+  }
+}
+
+function latin1ToBytes(str) {
+  const out = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i += 1) {
+    out[i] = str.charCodeAt(i) & 0xff;
+  }
+  return out;
 }
 
 function decodePdfStringToken(token) {
@@ -73,9 +86,9 @@ async function extractPdfText(arrayBuffer) {
   while ((m = streamRegex.exec(ascii)) !== null) {
     const dict = m[1] || "";
     const streamRaw = m[2] || "";
-    const streamBytes = new TextEncoder().encode(streamRaw);
+    const streamBytes = latin1ToBytes(streamRaw);
     const decoded = await inflateIfNeeded(dict, streamBytes);
-    const content = decoded || streamRaw;
+    const content = /FlateDecode/i.test(dict) ? decoded : (decoded || streamRaw);
     const extracted = extractTextFromPdfContent(content);
     if (extracted) chunks.push(extracted);
   }
