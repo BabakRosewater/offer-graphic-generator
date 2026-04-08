@@ -341,9 +341,9 @@
 
         const options = Array.isArray(extraData.paymentOptions) ? extraData.paymentOptions.slice(0, 2) : [];
         const rows = options.map((o) =>
-          `<div class=\"box-row\"><span>${num(o.term)} mo • ${num(o.apr).toFixed(2).replace(/\\.00$/, \"\")}%</span><b>${currency(o.payment)}/mo</b></div>`
+          `<div class="box-row"><span>${num(o.term)} mo • ${num(o.apr).toFixed(2).replace(/\.00$/, "")}%</span><b>${currency(o.payment)}/mo</b></div>`
         ).join("");
-        document.getElementById("pvPaymentOptions").innerHTML = rows || `<div class=\"box-row\"><span>Selected Terms</span><b>${currency(document.getElementById("payment").value)}/mo</b></div>`;
+        document.getElementById("pvPaymentOptions").innerHTML = rows || `<div class="box-row"><span>Selected Terms</span><b>${currency(document.getElementById("payment").value)}/mo</b></div>`;
       }
 
       function setError(msg) {
