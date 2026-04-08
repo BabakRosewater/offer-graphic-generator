@@ -150,6 +150,22 @@ async function fetchInventoryMatch(baseUrl, key, value, timeoutMs = 2500) {
 function applyInventoryEnrichment(baseData, payload) {
   if (!payload?.ok || !payload?.vehicle) return baseData;
   const vehicle = payload.vehicle;
+  const rawImageUrl = String(vehicle.imageUrl || "").trim();
+  let imageUrl = "";
+  if (rawImageUrl) {
+    try {
+      const candidate = rawImageUrl.startsWith("//")
+        ? `https:${rawImageUrl}`
+        : rawImageUrl.startsWith("http://")
+          ? rawImageUrl.replace(/^http:\/\//i, "https://")
+          : rawImageUrl.match(/^https?:\/\//i)
+            ? rawImageUrl
+            : `https://${rawImageUrl}`;
+      imageUrl = new URL(candidate).toString();
+    } catch {
+      imageUrl = "";
+    }
+  }
   const enriched = {
     ...baseData,
     stockNumber: String(vehicle.stockNumber || baseData.stockNumber || ""),
@@ -157,7 +173,7 @@ function applyInventoryEnrichment(baseData, payload) {
     vehicleName: String(vehicle.vehicleName || baseData.vehicleName || ""),
     vehicleColor: String(vehicle.color || baseData.vehicleColor || ""),
     vehicleMileage: Number(vehicle.mileage ?? baseData.vehicleMileage ?? 0) || 0,
-    imageUrl: String(vehicle.imageUrl || ""),
+    imageUrl,
     inventoryStatus: String(vehicle.status || ""),
     inventoryMatchType: String(payload.matchType || ""),
   };

@@ -314,6 +314,13 @@
             const imageEl = document.getElementById('out-vehicleImage');
             const placeholderEl = document.getElementById('out-vehiclePlaceholder');
             if (imageUrl) {
+                imageEl.referrerPolicy = 'no-referrer';
+                imageEl.crossOrigin = 'anonymous';
+                imageEl.onerror = () => {
+                    imageEl.removeAttribute('src');
+                    imageEl.classList.add('hidden-view');
+                    placeholderEl.classList.remove('hidden-view');
+                };
                 imageEl.src = imageUrl;
                 imageEl.classList.remove('hidden-view');
                 placeholderEl.classList.add('hidden-view');
