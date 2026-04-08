@@ -146,7 +146,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
       const fields = [
         "customerName","customerPhone","vehicleName","retailPrice","discount","tradeEquity",
         "amountFinanced","payment","apr","term","stockNumber","vin","vehicleColor",
@@ -180,6 +183,28 @@
         updatePreview();
       }
 
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function convertPdfToImageDataUrl(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+        return canvas.toDataURL("image/png");
+      }
+
       fields.forEach((id) => document.getElementById(id).addEventListener("input", updatePreview));
       updatePreview();
 
@@ -193,14 +218,28 @@
           return;
         }
 
-        const formData = new FormData();
-        formData.append("file", file);
         statusEl.textContent = "Extracting...";
 
         try {
+          let dataUrl;
+          let mimeType;
+
+          if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+            statusEl.textContent = "Converting PDF first page to image...";
+            dataUrl = await convertPdfToImageDataUrl(file);
+            mimeType = "image/png";
+          } else {
+            dataUrl = await fileToBase64(file);
+            mimeType = file.type || "image/png";
+          }
+
+          const imageBase64 = String(dataUrl).split(",")[1];
+          if (!imageBase64) throw new Error("Unable to read image data from uploaded file.");
+
           const response = await fetch("/api/extract", {
             method: "POST",
-            body: formData,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ mimeType, imageBase64 }),
           });
 
           const payload = await response.json();

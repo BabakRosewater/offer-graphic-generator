@@ -1,51 +1,39 @@
 # offer-graphic-generator
 
-Cloudflare Pages static app for generating offer graphics from Clark Hyundai purchase agreements.
+Cloudflare Pages single-page app for turning purchase agreement uploads into reviewable offer graphic data.
 
-## Current architecture
+## Architecture (current behavior)
 
-- Static single-page app in `index.html`
-- Cloudflare Pages Function endpoint at `functions/api/extract.js`
-- Deterministic parser and normalizer modules in `lib/`
-- Manual review/edit + preview/download flow remains in place
-
-## Extraction flow (phase 1.5 / AI-assisted)
-
-### 1) PDF path
-
-1. Try deterministic PDF text extraction and parser first.
-2. Normalize parsed output with `lib/normalize-deal-data.js`.
-3. If data is too weak/incomplete, fallback to Gemini.
-
-`source_type` values:
-- `pdf_text` (deterministic success)
-- `pdf_ai_fallback` (Gemini used after deterministic shortfall)
-
-### 2) Image path
-
-- Send image directly to Gemini extraction.
-- Normalize output with `lib/normalize-deal-data.js`.
-
-`source_type` value:
-- `image_ai_fallback`
+- **Frontend (`index.html`)**
+  - Accepts PDF and image uploads
+  - Converts PDF first page to image client-side with `pdf.js`
+  - Sends JSON to `/api/extract`:
+    ```json
+    { "mimeType": "image/png", "imageBase64": "..." }
+    ```
+  - Keeps review/edit form, live preview, and `html2canvas` download flow
+- **Backend (`functions/api/extract.js`)**
+  - Calls Gemini server-side
+  - Reads `GEMINI_API_KEY` and optional `GEMINI_MODEL` from Cloudflare env
+  - Returns normalized JSON payload
+- **Normalization (`lib/normalize-deal-data.js`)**
+  - Enforces stable output shape and type-safe numeric parsing
+- **Parsing helpers (`lib/parse-purchase-agreement.js`)**
+  - Parses money/APR/term/payment strings
+  - Handles term strings like `72 Monthly`
+  - Handles payment ranges like `$429 - $464` and returns the lower value
 
 ## Critical business rule
 
-For **payment**, **APR**, and **term**:
-- Use **Selected Terms** when visible.
-- Do **not** use lowest matrix payment unless Selected Terms is missing.
-- If Selected Terms payment is a range, use the lower value in that Selected Terms range.
+Payment/APR/term must come from Selected Terms when visible.
+Do not use lowest matrix payment unless Selected Terms is missing.
 
-This rule is enforced in deterministic normalization and explicitly required in Gemini prompt instructions.
-
-## Gemini configuration
-
-Set these as Cloudflare Pages environment variables/secrets:
+## Environment variables (Cloudflare Pages)
 
 - `GEMINI_API_KEY` (required)
-- `GEMINI_MODEL` (optional, defaults to `gemini-2.5-flash`)
+- `GEMINI_MODEL` (optional, default: `gemini-2.5-flash`)
 
-No API key is used client-side.
+No client-side API key is used.
 
 ## API response shape
 
@@ -54,7 +42,7 @@ No API key is used client-side.
 ```json
 {
   "ok": true,
-  "source_type": "pdf_text | pdf_ai_fallback | image_ai_fallback",
+  "source_type": "image_ai_fallback",
   "data": {
     "customerName": "",
     "vehicleName": "",
@@ -84,43 +72,20 @@ No API key is used client-side.
 {
   "ok": false,
   "error": "...",
-  "stage": "validation | extract"
+  "stage": "validation | extract",
+  "source_type": "image_ai_fallback"
 }
 ```
 
-`source_type` may be included when available.
+## Deploy
 
-## Current limitations
+1. Connect repo to Cloudflare Pages.
+2. Framework preset: `None`
+3. Build command: *(empty)*
+4. Build output directory: `.`
+5. Add environment variables above and deploy.
 
-- Deterministic PDF extraction still depends on readable text streams.
-- Gemini extraction quality depends on model output consistency.
-- Large files may hit provider/runtime limits.
-
-## Local development
-
-### Prerequisites
-
-- Node.js 18+
-- Wrangler 3+
-
-### Run
-
-```bash
-npm install
-npx wrangler pages dev .
-```
-
-Then open the local URL from Wrangler and upload a PDF/image.
-
-## Deploy (Cloudflare Pages)
-
-1. Connect repository to Cloudflare Pages.
-2. Use build output directory `.`
-3. Keep Framework preset as `None`.
-4. Add `GEMINI_API_KEY` (+ optional `GEMINI_MODEL`) in Pages environment variables/secrets.
-5. Deploy.
-
-## Expected structure
+## Structure
 
 ```text
 offer-graphic-generator/
