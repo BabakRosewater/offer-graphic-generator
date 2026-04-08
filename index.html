@@ -1,300 +1,503 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Offer Graphic Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <style>
-      :root {
-        --bg: #f8fafc;
-        --card: #ffffff;
-        --muted: #64748b;
-        --text: #0f172a;
-        --accent: #0ea5e9;
-        --danger: #b91c1c;
-        --border: #e2e8f0;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-      }
-      .container {
-        max-width: 1100px;
-        margin: 24px auto;
-        padding: 0 16px;
-        display: grid;
-        grid-template-columns: 1fr 360px;
-        gap: 20px;
-      }
-      .panel {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 16px;
-      }
-      h1 { margin-top: 0; }
-      .muted { color: var(--muted); }
-      .stack { display: grid; gap: 12px; }
-      .row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
-      label { display: grid; gap: 6px; font-size: 14px; }
-      input {
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px;
-        width: 100%;
-      }
-      button {
-        border: 0;
-        border-radius: 8px;
-        background: var(--accent);
-        color: white;
-        padding: 10px 14px;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      button[disabled] { opacity: 0.6; cursor: not-allowed; }
-      .error {
-        color: var(--danger);
-        font-size: 14px;
-        min-height: 20px;
-      }
-      #previewCard {
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px;
-        background: white;
-        min-height: 240px;
-      }
-      .price { font-size: 26px; font-weight: 700; }
-      .meta { font-size: 13px; color: var(--muted); }
-      .vehicle-title {
-        font-weight: 700;
-        margin-bottom: 8px;
-        line-height: 1.2;
-        font-size: 20px;
-      }
-      @media (max-width: 900px) {
-        .container { grid-template-columns: 1fr; }
-      }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .hidden-view { display: none !important; }
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <section class="panel">
-        <h1>Offer Graphic Generator</h1>
-        <p class="muted">Upload Clark Hyundai purchase agreement PDF and review values before download.</p>
+</head>
+<body class="bg-slate-100 p-4 md:p-8 font-sans text-slate-800 min-h-screen">
 
-        <div class="stack">
-          <label>
-            Upload PDF or image
-            <input id="fileInput" type="file" accept="application/pdf,image/*" />
-          </label>
-          <button id="extractBtn" type="button">Extract Deal Data</button>
-          <div id="status" class="muted"></div>
-          <div id="error" class="error"></div>
+    <div class="max-w-6xl mx-auto">
+        
+        <header class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-blue-900 rounded-lg text-white shadow-sm">
+                    <i data-lucide="layout-template" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Offer Graphic Generator</h1>
+                    <p class="text-slate-500">Transform internal quotes into mobile-friendly summaries.</p>
+                </div>
+            </div>
+            
+            <button id="btn-start-over" class="hidden-view text-sm font-medium text-slate-500 hover:text-blue-600 flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 transition-colors">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Start Over
+            </button>
+        </header>
+
+        <div id="view-upload" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center min-h-[500px]">
+            <div id="drop-zone" class="w-full max-w-2xl border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-center p-12 hover:bg-slate-50 transition-colors cursor-pointer">
+                <div class="bg-blue-50 text-blue-900 p-5 rounded-full mb-6">
+                    <i data-lucide="upload" class="w-10 h-10"></i>
+                </div>
+                <h3 class="font-bold text-2xl text-slate-800 mb-2">Upload Purchase Agreement</h3>
+                <p class="text-slate-500 mb-8 max-w-md">
+                    Upload your internal deal sheet (PDF or Image). The system will extract the data and build a customer-facing summary card.
+                </p>
+                <div class="flex gap-2 justify-center mb-6">
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">PDF</span>
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">PNG</span>
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">JPG</span>
+                </div>
+                <button class="bg-blue-900 text-white px-6 py-3 rounded-lg font-medium shadow-sm hover:bg-blue-800 transition-colors pointer-events-none">
+                    Browse Files
+                </button>
+                <input type="file" id="file-input" accept="application/pdf, image/*" class="hidden" />
+            </div>
         </div>
 
-        <hr style="margin:16px 0;border:0;border-top:1px solid var(--border)">
-
-        <div class="stack" id="reviewForm">
-          <div class="row">
-            <label>Customer Name <input id="customerName" /></label>
-            <label>Customer Phone <input id="customerPhone" /></label>
-          </div>
-          <label>Vehicle Name <input id="vehicleName" /></label>
-          <div class="row">
-            <label>Retail Price <input id="retailPrice" type="number" step="0.01" /></label>
-            <label>Discount (Savings) <input id="discount" type="number" step="0.01" /></label>
-          </div>
-          <div class="row">
-            <label>Amount Financed <input id="amountFinanced" type="number" step="0.01" /></label>
-            <label>Trade Equity <input id="tradeEquity" type="number" step="0.01" /></label>
-          </div>
-          <div class="row">
-            <label>Payment <input id="payment" type="number" step="0.01" /></label>
-            <label>APR <input id="apr" type="number" step="0.01" /></label>
-          </div>
-          <div class="row">
-            <label>Term (months) <input id="term" type="number" /></label>
-            <label>Stock Number <input id="stockNumber" /></label>
-          </div>
-          <div class="row">
-            <label>VIN <input id="vin" /></label>
-            <label>Vehicle Color <input id="vehicleColor" /></label>
-          </div>
-          <div class="row">
-            <label>Vehicle Mileage <input id="vehicleMileage" type="number" /></label>
-            <label>Sales Price <input id="salesPrice" type="number" step="0.01" /></label>
-          </div>
-          <div class="row">
-            <label>Total Sales Price <input id="totalSalesPrice" type="number" step="0.01" /></label>
-            <label>Trade Allowance <input id="tradeAllowance" type="number" step="0.01" /></label>
-          </div>
-          <label>Trade Payoff <input id="tradePayoff" type="number" step="0.01" /></label>
-
-          <button id="downloadBtn" type="button">Download Graphic</button>
+        <div id="view-extracting" class="hidden-view bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center min-h-[500px]">
+            <div class="flex flex-col items-center text-center">
+                <i data-lucide="loader-2" class="w-12 h-12 text-blue-900 spinner mb-6"></i>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Processing Document...</h3>
+                <p class="text-slate-500" id="extraction-status">Analyzing document with Gemini AI...</p>
+            </div>
         </div>
-      </section>
 
-      <aside class="panel">
-        <h2 style="margin-top:0">Preview</h2>
-        <div id="previewCard">
-          <div id="pvVehicle" class="vehicle-title">Vehicle</div>
-          <div id="pvCustomer" class="meta" style="margin-bottom:10px;">Customer</div>
-          <div class="price" id="pvPayment">$0/mo</div>
-          <div class="meta" id="pvTerms">0 months • 0% APR</div>
-          <hr style="margin:12px 0;border:0;border-top:1px solid var(--border)">
-          <div class="meta" id="pvNumbers">Retail $0 • Savings $0 • Trade Equity $0</div>
+        <div id="view-review" class="hidden-view flex flex-col lg:flex-row gap-8 items-start">
+            
+            <div class="w-full lg:w-1/3 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-slate-100 bg-blue-50/50 flex justify-between items-center">
+                    <h2 class="font-semibold text-blue-900 flex items-center gap-2">
+                        <i data-lucide="file-image" class="w-4 h-4"></i> Review Extracted Data
+                    </h2>
+                </div>
+                
+                <div class="p-6 space-y-4 flex-1 overflow-y-auto max-h-[700px] custom-scrollbar">
+                    <form id="data-form" class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Customer Name</label>
+                            <div class="relative">
+                                <i data-lucide="user" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="text" id="in-customerName" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Vehicle</label>
+                            <div class="relative">
+                                <i data-lucide="car" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="text" id="in-vehicleName" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Retail Price</label>
+                            <div class="relative">
+                                <i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="number" id="in-retailPrice" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Discount</label>
+                            <div class="relative">
+                                <i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="number" id="in-discount" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Equity (+/-)</label>
+                            <div class="relative">
+                                <i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="number" id="in-tradeEquity" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Amount Financed</label>
+                            <div class="relative">
+                                <i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="number" id="in-amountFinanced" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Monthly Payment</label>
+                            <div class="relative">
+                                <i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="number" id="in-payment" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none text-lg font-bold text-blue-900" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">APR %</label>
+                            <div class="relative">
+                                <i data-lucide="percent" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="number" step="0.01" id="in-apr" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Term (Mo)</label>
+                            <div class="relative">
+                                <i data-lucide="calendar" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i>
+                                <input type="number" id="in-term" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="p-4 bg-slate-50 border-t border-slate-100">
+                    <button id="btn-download" class="w-full py-4 px-4 bg-blue-900 hover:bg-blue-800 text-white rounded-xl font-medium text-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-900/20">
+                        <i data-lucide="download" id="icon-download" class="w-6 h-6"></i>
+                        <i data-lucide="loader-2" id="icon-generating" class="w-6 h-6 spinner hidden-view"></i>
+                        <span id="text-download">Download Graphic</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-2/3 flex justify-center items-start bg-slate-200/50 rounded-3xl p-4 md:p-8 border border-slate-200 border-dashed">
+                
+                <div id="graphic-canvas" class="bg-white w-full max-w-[420px] relative font-sans shadow-2xl rounded-sm overflow-hidden">
+                    <div class="text-center pt-10 pb-6 px-6">
+                        <h1 class="text-2xl font-black text-[#0f2846] tracking-tight uppercase">Your Offer Summary</h1>
+                        <p class="text-lg text-slate-500 font-medium mt-1">Prepared for <span id="out-customerName">Customer</span></p>
+                        <p id="out-vehicleName" class="text-lg font-bold text-slate-800 mt-6 bg-slate-100 py-3 px-2 rounded-lg">Vehicle Description</p>
+                    </div>
+
+                    <div class="px-8 mt-2 space-y-4">
+                        <div class="flex justify-between items-end border-b-2 border-slate-100 pb-2">
+                            <span class="text-lg font-bold text-slate-600">Retail Price:</span>
+                            <span id="out-retailPrice" class="text-xl font-bold text-slate-900">$0</span>
+                        </div>
+                        <div id="row-discount" class="flex justify-between items-end border-b-2 border-slate-100 pb-2">
+                            <span class="text-lg font-bold text-green-600">Discount:</span>
+                            <span id="out-discount" class="text-xl font-black text-green-600">-$0</span>
+                        </div>
+                        <div class="flex justify-between items-end border-b-2 border-slate-800 pb-2 pt-2">
+                            <span class="text-xl font-bold text-slate-800">Sale Price:</span>
+                            <span id="out-salePrice" class="text-2xl font-black text-slate-900">$0</span>
+                        </div>
+                        <div id="row-tradeEquity" class="flex justify-between items-end border-b-2 border-slate-100 pb-2 pt-2">
+                            <span class="text-lg font-medium text-slate-600">Trade Equity:</span>
+                            <span id="out-tradeEquity" class="text-lg font-bold">$0</span>
+                        </div>
+                        <div id="row-amountFinanced" class="flex justify-between items-end pt-2">
+                            <span class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Financed:</span>
+                            <span id="out-amountFinanced" class="text-lg font-bold text-slate-700">$0</span>
+                        </div>
+                    </div>
+
+                    <div class="relative mt-8 px-6 pb-10">
+                        <div class="bg-gradient-to-br from-[#1e4b82] to-[#0f2846] w-full rounded-3xl p-8 pt-10 text-center shadow-lg relative overflow-hidden">
+                            <h3 class="text-white/80 font-bold uppercase tracking-widest text-sm mb-2">Selected Payment Plan</h3>
+                            <div class="flex justify-center items-baseline gap-1">
+                                <span class="text-white text-4xl font-bold mb-8">$</span>
+                                <span id="out-payment" class="text-white text-8xl font-black leading-none tracking-tighter">0</span>
+                            </div>
+                            <span class="text-white/90 text-xl font-medium block mb-6">per month</span>
+                            <div class="w-full h-[1px] bg-white/20 mb-6"></div>
+                            <div class="flex flex-col items-center justify-center gap-1">
+                                <span class="text-white text-2xl font-bold"><span id="out-apr">0</span>% APR</span>
+                                <span class="text-white/90 text-xl font-medium"><span id="out-term">0</span> months</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6 pb-6 text-center bg-slate-50 border-t border-slate-100 pt-4">
+                        <p class="text-[11px] text-slate-400 font-medium max-w-[300px] mx-auto leading-relaxed">
+                            Payments are estimates and subject to approved credit and program eligibility. Excludes tax, title, and license fees.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </aside>
+        
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        lucide.createIcons();
 
-      const fields = [
-        "customerName","customerPhone","vehicleName","retailPrice","discount","tradeEquity",
-        "amountFinanced","payment","apr","term","stockNumber","vin","vehicleColor",
-        "vehicleMileage","salesPrice","totalSalesPrice","tradeAllowance","tradePayoff"
-      ];
+        // The Canvas environment provides this key automatically
+        const apiKey = ""; 
 
-      const num = (v) => Number(v || 0);
-      const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-      const currency = (n) => {
-        const value = num(n);
-        return value < 0 ? `-${usd.format(Math.abs(value))}` : usd.format(value);
-      };
-      const cleanVehicleForCard = (name) =>
-        String(name || "")
-          .replace(/,\s*body\s*type\s*:.*/i, "")
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 48);
+        let formData = {
+            customerName: '', vehicleName: '', retailPrice: 0, discount: 0,
+            tradeEquity: 0, amountFinanced: 0, payment: 0, apr: 0, term: 0,
+            salesPrice: 0, totalSalesPrice: 0, tradeAllowance: 0, tradePayoff: 0,
+            customerPhone: '', stockNumber: '', vin: '', vehicleColor: '', vehicleMileage: 0
+        };
 
-      function updatePreview() {
-        document.getElementById("pvVehicle").textContent = cleanVehicleForCard(document.getElementById("vehicleName").value) || "Vehicle";
-        document.getElementById("pvCustomer").textContent = document.getElementById("customerName").value || "Customer";
-        document.getElementById("pvPayment").textContent = `${currency(document.getElementById("payment").value)}/mo`;
-        document.getElementById("pvTerms").textContent = `${num(document.getElementById("term").value)} months • ${num(document.getElementById("apr").value)}% APR`;
-        document.getElementById("pvNumbers").textContent =
-          `Retail ${currency(document.getElementById("retailPrice").value)} • ` +
-          `Savings ${currency(document.getElementById("discount").value)} • ` +
-          `Trade Equity ${currency(document.getElementById("tradeEquity").value)}`;
-      }
+        const viewUpload = document.getElementById('view-upload');
+        const viewExtracting = document.getElementById('view-extracting');
+        const viewReview = document.getElementById('view-review');
+        const btnStartOver = document.getElementById('btn-start-over');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
 
-      function setError(message) {
-        document.getElementById("error").textContent = message || "";
-      }
+        const inputs = ['customerName', 'vehicleName', 'retailPrice', 'discount', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term'];
 
-      function fillForm(data) {
-        for (const key of fields) {
-          const el = document.getElementById(key);
-          if (!el || data[key] === undefined || data[key] === null) continue;
-          el.value = data[key];
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount || 0);
+        };
+
+        function setViewState(state) {
+            viewUpload.classList.add('hidden-view');
+            viewExtracting.classList.add('hidden-view');
+            viewReview.classList.add('hidden-view');
+            btnStartOver.classList.add('hidden-view');
+
+            if (state === 'upload') viewUpload.classList.remove('hidden-view');
+            if (state === 'extracting') viewExtracting.classList.remove('hidden-view');
+            if (state === 'review') {
+                viewReview.classList.remove('hidden-view');
+                btnStartOver.classList.remove('hidden-view');
+            }
         }
-        updatePreview();
-      }
 
-      function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function convertPdfToImage(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            return canvas.toDataURL('image/png');
+        }
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-slate-50'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-slate-50'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-slate-50');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         });
-      }
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
 
-      async function convertPdfToImageDataUrl(file) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 2 });
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        await page.render({ canvasContext: context, viewport }).promise;
-        return canvas.toDataURL("image/png");
-      }
+        async function handleFile(file) {
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                alert("Please upload a PDF or an Image file (PNG/JPG).");
+                return;
+            }
+            
+            setViewState('extracting');
+            const statusText = document.getElementById('extraction-status');
 
-      fields.forEach((id) => document.getElementById(id).addEventListener("input", updatePreview));
-      updatePreview();
+            try {
+                let base64Clean = "";
+                let mimeType = "image/png";
 
-      document.getElementById("extractBtn").addEventListener("click", async () => {
-        setError("");
-        const statusEl = document.getElementById("status");
-        const input = document.getElementById("fileInput");
-        const file = input.files && input.files[0];
-        if (!file) {
-          setError("Please choose a PDF or image file first.");
-          return;
+                if (file.type === 'application/pdf') {
+                    statusText.innerText = "Converting PDF to image format...";
+                    const pdfDataUrl = await convertPdfToImage(file);
+                    base64Clean = pdfDataUrl.split(',')[1];
+                } else {
+                    const base64Data = await fileToBase64(file);
+                    base64Clean = base64Data.split(',')[1];
+                    mimeType = file.type;
+                }
+                
+                statusText.innerText = "Analyzing document with Gemini AI...";
+                await performAIExtraction(base64Clean, mimeType);
+
+            } catch (err) {
+                console.error(err);
+                alert("Error processing file. Please ensure it is a valid document.");
+                setViewState('upload');
+            }
         }
 
-        statusEl.textContent = "Extracting...";
+        // Direct call to Gemini API for use inside the Canvas environment
+        async function performAIExtraction(base64Image, mimeType) {
+            try {
+                const prompt = `
+                    Analyze this vehicle purchase agreement. Extract the financial details and return a strictly normalized JSON object EXACTLY in this shape:
+                    {
+                      "customerName": "",
+                      "vehicleName": "",
+                      "retailPrice": 0,
+                      "discount": 0,
+                      "tradeEquity": 0,
+                      "amountFinanced": 0,
+                      "payment": 0,
+                      "apr": 0,
+                      "term": 0,
+                      "salesPrice": 0,
+                      "totalSalesPrice": 0,
+                      "tradeAllowance": 0,
+                      "tradePayoff": 0,
+                      "customerPhone": "",
+                      "stockNumber": "",
+                      "vin": "",
+                      "vehicleColor": "",
+                      "vehicleMileage": 0
+                    }
+                    Ensure numbers are just numbers (no $ or ,) and strings are strings. If a value is missing, use 0 for numbers or an empty string "" for strings.
+                `;
 
-        try {
-          let dataUrl;
-          let mimeType;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: mimeType, data: base64Image } }
+                            ]
+                        }],
+                        generationConfig: { 
+                            responseMimeType: "application/json" 
+                        }
+                    })
+                });
 
-          if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-            statusEl.textContent = "Converting PDF first page to image...";
-            dataUrl = await convertPdfToImageDataUrl(file);
-            mimeType = "image/png";
-          } else {
-            dataUrl = await fileToBase64(file);
-            mimeType = file.type || "image/png";
-          }
+                if (!response.ok) {
+                    throw new Error(`API Request Failed: ${response.status}`);
+                }
 
-          const imageBase64 = String(dataUrl).split(",")[1];
-          if (!imageBase64) throw new Error("Unable to read image data from uploaded file.");
+                const data = await response.json();
+                let textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!textResult) throw new Error("No response text from Gemini");
 
-          const response = await fetch("/api/extract", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ mimeType, imageBase64 }),
-          });
+                textResult = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
+                const extractedJson = JSON.parse(textResult);
+                
+                // Sanitize extracted data
+                const numberFields = ['retailPrice', 'discount', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'salesPrice', 'totalSalesPrice', 'tradeAllowance', 'tradePayoff', 'vehicleMileage'];
+                Object.keys(extractedJson).forEach(key => {
+                    if (numberFields.includes(key)) {
+                        extractedJson[key] = Number(extractedJson[key]) || 0;
+                    }
+                });
 
-          let payload = null;
-          try {
-            payload = await response.json();
-          } catch {
-            payload = { ok: false, error: `Extraction failed (HTTP ${response.status}).` };
-          }
-          if (!response.ok || !payload.ok) {
-            throw new Error(payload.error || `Extraction failed (HTTP ${response.status}).`);
-          }
+                updateFormData(extractedJson);
+                setViewState('review');
 
-          fillForm(payload.data || {});
-          statusEl.textContent = `Extraction complete (${payload.source_type || "unknown source"}).`;
-        } catch (error) {
-          statusEl.textContent = "";
-          setError(error?.message || "Extraction failed. Please review and enter values manually.");
+            } catch (err) {
+                console.error("Gemini Extraction Error:", err);
+                alert("Failed to extract data using AI. Please fill the form manually.");
+                setViewState('review');
+            }
         }
-      });
 
-      document.getElementById("downloadBtn").addEventListener("click", async () => {
-        setError("");
-        const btn = document.getElementById("downloadBtn");
-        const prevLabel = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = "Rendering...";
-        const card = document.getElementById("previewCard");
-        try {
-          const canvas = await html2canvas(card, { backgroundColor: "#ffffff", scale: 3, useCORS: true });
-          const a = document.createElement("a");
-          a.href = canvas.toDataURL("image/png");
-          a.download = "offer-graphic.png";
-          a.click();
-        } finally {
-          btn.disabled = false;
-          btn.textContent = prevLabel;
+        function updateFormData(newData) {
+            formData = { ...formData, ...newData };
+            inputs.forEach(key => {
+                const input = document.getElementById(`in-${key}`);
+                if (input) input.value = formData[key];
+            });
+            renderGraphic();
         }
-      });
+
+        document.getElementById('data-form').addEventListener('input', (e) => {
+            const key = e.target.id.replace('in-', '');
+            let value = e.target.value;
+            const numberFields = ['retailPrice', 'discount', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'salesPrice', 'totalSalesPrice', 'tradeAllowance', 'tradePayoff', 'vehicleMileage'];
+            if (numberFields.includes(key)) value = Number(value) || 0;
+            formData[key] = value;
+            renderGraphic();
+        });
+
+        function renderGraphic() {
+            document.getElementById('out-customerName').innerText = formData.customerName || 'Customer';
+            document.getElementById('out-vehicleName').innerText = formData.vehicleName || 'Vehicle Description';
+            document.getElementById('out-retailPrice').innerText = formatCurrency(formData.retailPrice);
+            
+            const salePrice = formData.retailPrice - formData.discount;
+            document.getElementById('out-salePrice').innerText = formatCurrency(salePrice);
+            
+            const rowDiscount = document.getElementById('row-discount');
+            if (formData.discount > 0) {
+                rowDiscount.classList.remove('hidden-view');
+                document.getElementById('out-discount').innerText = `-${formatCurrency(formData.discount)}`;
+            } else {
+                rowDiscount.classList.add('hidden-view');
+            }
+
+            const rowTrade = document.getElementById('row-tradeEquity');
+            const elTrade = document.getElementById('out-tradeEquity');
+            if (formData.tradeEquity !== 0) {
+                rowTrade.classList.remove('hidden-view');
+                elTrade.innerText = formatCurrency(formData.tradeEquity);
+                elTrade.className = `text-lg font-bold ${formData.tradeEquity < 0 ? 'text-red-600' : 'text-green-600'}`;
+            } else {
+                rowTrade.classList.add('hidden-view');
+            }
+
+            const rowFinanced = document.getElementById('row-amountFinanced');
+            if (formData.amountFinanced > 0) {
+                rowFinanced.classList.remove('hidden-view');
+                document.getElementById('out-amountFinanced').innerText = formatCurrency(formData.amountFinanced);
+            } else {
+                rowFinanced.classList.add('hidden-view');
+            }
+
+            document.getElementById('out-payment').innerText = formData.payment || 0;
+            document.getElementById('out-apr').innerText = formData.apr || 0;
+            document.getElementById('out-term').innerText = formData.term || 0;
+        }
+
+        document.getElementById('btn-download').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-download');
+            const iconD = document.getElementById('icon-download');
+            const iconG = document.getElementById('icon-generating');
+            const text = document.getElementById('text-download');
+            
+            btn.classList.add('opacity-80', 'pointer-events-none');
+            iconD.classList.add('hidden-view');
+            iconG.classList.remove('hidden-view');
+            text.innerText = "Rendering...";
+
+            try {
+                const canvasElement = document.getElementById('graphic-canvas');
+                const canvas = await html2canvas(canvasElement, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = image;
+                const safeName = (formData.customerName || "Customer").replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                link.download = `${safeName}_offer_summary.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error("Export error:", err);
+                alert("Failed to export image.");
+            } finally {
+                btn.classList.remove('opacity-80', 'pointer-events-none');
+                iconD.classList.remove('hidden-view');
+                iconG.classList.add('hidden-view');
+                text.innerText = "Download Graphic";
+            }
+        });
+
+        btnStartOver.addEventListener('click', () => {
+            setViewState('upload');
+            fileInput.value = '';
+            updateFormData({
+                customerName: '', vehicleName: '', retailPrice: 0, discount: 0,
+                tradeEquity: 0, amountFinanced: 0, payment: 0, apr: 0, term: 0,
+                salesPrice: 0, totalSalesPrice: 0, tradeAllowance: 0, tradePayoff: 0,
+                customerPhone: '', stockNumber: '', vin: '', vehicleColor: '', vehicleMileage: 0
+            });
+        });
     </script>
-  </body>
+</body>
 </html>
