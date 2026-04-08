@@ -1,0 +1,6 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "offer-graphic-generator",
+  "compatibility_date": "2026-04-08",
+  "pages_build_output_dir": "."
+}
