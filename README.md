@@ -2,40 +2,98 @@
 
 Cloudflare Pages static app for generating offer graphics from Clark Hyundai purchase agreements.
 
-## Phase 1 scope (implemented)
-
-Phase 1 implements deterministic **PDF text extraction** and parsing for Clark Hyundai purchase agreement PDFs.
+## Current architecture
 
 - Static single-page app in `index.html`
 - Cloudflare Pages Function endpoint at `functions/api/extract.js`
-- Parser and normalizer modules in `lib/`
-- Manual review/edit and preview/download flow remains in place
+- Deterministic parser and normalizer modules in `lib/`
+- Manual review/edit + preview/download flow remains in place
 
-## What changed in phase 1
+## Extraction flow (phase 1.5 / AI-assisted)
 
-- Removed client-side Gemini/API-key extraction path
-- Upload now accepts `application/pdf,image/*`
-- Front end sends uploaded file to `/api/extract`
-- PDF flow:
-  1. Extract raw text from PDF streams in the function
-  2. Parse deterministic Clark Hyundai fields
-  3. Normalize to UI data contract
-  4. Return JSON to browser for form population
-- Image flow currently returns `501` with:
-  - `Image extraction not implemented in phase 1`
+### 1) PDF path
+
+1. Try deterministic PDF text extraction and parser first.
+2. Normalize parsed output with `lib/normalize-deal-data.js`.
+3. If data is too weak/incomplete, fallback to Gemini.
+
+`source_type` values:
+- `pdf_text` (deterministic success)
+- `pdf_ai_fallback` (Gemini used after deterministic shortfall)
+
+### 2) Image path
+
+- Send image directly to Gemini extraction.
+- Normalize output with `lib/normalize-deal-data.js`.
+
+`source_type` value:
+- `image_ai_fallback`
 
 ## Critical business rule
 
-For **payment**, **APR**, and **term**, extraction uses the **Selected Terms** section as source of truth.
+For **payment**, **APR**, and **term**:
+- Use **Selected Terms** when visible.
+- Do **not** use lowest matrix payment unless Selected Terms is missing.
 
-Only if Selected Terms values are missing does the normalizer fall back to payment matrix values.
+This rule is enforced in deterministic normalization and explicitly required in Gemini prompt instructions.
+
+## Gemini configuration
+
+Set these as Cloudflare Pages environment variables/secrets:
+
+- `GEMINI_API_KEY` (required)
+- `GEMINI_MODEL` (optional, defaults to `gemini-2.5-flash`)
+
+No API key is used client-side.
+
+## API response shape
+
+### Success
+
+```json
+{
+  "ok": true,
+  "source_type": "pdf_text | pdf_ai_fallback | image_ai_fallback",
+  "data": {
+    "customerName": "",
+    "vehicleName": "",
+    "retailPrice": 0,
+    "discount": 0,
+    "tradeEquity": 0,
+    "amountFinanced": 0,
+    "payment": 0,
+    "apr": 0,
+    "term": 0,
+    "salesPrice": 0,
+    "totalSalesPrice": 0,
+    "tradeAllowance": 0,
+    "tradePayoff": 0,
+    "customerPhone": "",
+    "stockNumber": "",
+    "vin": "",
+    "vehicleColor": "",
+    "vehicleMileage": 0
+  }
+}
+```
+
+### Error
+
+```json
+{
+  "ok": false,
+  "error": "...",
+  "stage": "validation | extract"
+}
+```
+
+`source_type` may be included when available.
 
 ## Current limitations
 
-- PDF extraction relies on readable text content streams and Flate decoding available in Worker runtime.
-- Scanned/image-only PDFs are not OCR’d in phase 1.
-- Image uploads are intentionally not implemented yet (phase 2).
-- No Gemini fallback in this phase.
+- Deterministic PDF extraction still depends on readable text streams.
+- Gemini extraction quality depends on model output consistency.
+- Large files may hit provider/runtime limits.
 
 ## Local development
 
@@ -51,16 +109,15 @@ npm install
 npx wrangler pages dev .
 ```
 
-Then open the local URL from Wrangler and upload a purchase agreement PDF.
+Then open the local URL from Wrangler and upload a PDF/image.
 
 ## Deploy (Cloudflare Pages)
 
-1. Connect this repository to Cloudflare Pages.
-2. Set build output directory to the repository root (`.`).
-3. Ensure Pages Functions are enabled (the `functions/` directory is auto-detected).
-4. Deploy.
-
-No API keys are required for phase 1, and no secrets are hardcoded.
+1. Connect repository to Cloudflare Pages.
+2. Use build output directory `.`
+3. Keep Framework preset as `None`.
+4. Add `GEMINI_API_KEY` (+ optional `GEMINI_MODEL`) in Pages environment variables/secrets.
+5. Deploy.
 
 ## Expected structure
 
@@ -76,9 +133,3 @@ offer-graphic-generator/
     parse-purchase-agreement.js
     normalize-deal-data.js
 ```
-
-## Phase 2 (not included yet)
-
-- Image extraction/OCR path
-- Gemini fallback for non-deterministic cases
-- Additional document families beyond Clark Hyundai purchase agreements
