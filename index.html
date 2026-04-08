@@ -242,7 +242,12 @@
             body: JSON.stringify({ mimeType, imageBase64 }),
           });
 
-          const payload = await response.json();
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = { ok: false, error: `Extraction failed (HTTP ${response.status}).` };
+          }
           if (!response.ok || !payload.ok) {
             throw new Error(payload.error || `Extraction failed (HTTP ${response.status}).`);
           }
