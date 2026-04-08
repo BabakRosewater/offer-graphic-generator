@@ -22,6 +22,7 @@ Cloudflare Pages single-page app for turning purchase agreement uploads into rev
   - Parses money/APR/term/payment strings
   - Handles term strings like `72 Monthly`
   - Handles payment ranges like `$429 - $464` and returns the lower value
+  - Parses optional `paymentOptions` arrays into normalized `{ term, apr, payment }` rows
 
 ## Critical business rule
 
@@ -61,7 +62,10 @@ No client-side API key is used.
     "stockNumber": "",
     "vin": "",
     "vehicleColor": "",
-    "vehicleMileage": 0
+    "vehicleMileage": 0,
+    "governmentFees": 0,
+    "cashDown": 0,
+    "paymentOptions": [{ "term": 60, "apr": 1.99, "payment": 427 }]
   }
 }
 ```

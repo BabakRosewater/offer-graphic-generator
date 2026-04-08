@@ -145,8 +145,35 @@
         background: #f4f7fb;
         border-top: 1px solid #e1e7f0;
       }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 14px 24px 0;
+      }
+      .box {
+        border-radius: 16px;
+        padding: 14px;
+        border: 1px solid #d6e1ee;
+        background: #f4f8fd;
+      }
+      .box h4 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #1c4e90;
+      }
+      .box-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #dde6f2; font-size:24px; }
+      .box-row:last-child { border-bottom:0; }
+      .trade { background:#edf7ee; border-color:#d4e8d7; }
+      .trade h4 { color:#1e7c37; }
+      .deal { background:#eef4fb; }
+      .negative { color:#b42318; }
+      .positive { color:#087443; }
       @media (max-width: 1000px) {
         .app { grid-template-columns: 1fr; }
+        .grid2 { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -225,6 +252,29 @@
             <div class="plan-term"><span id="pvTerm">0</span> months</div>
           </div>
 
+          <div class="grid2">
+            <div class="box">
+              <h4>Payment Options</h4>
+              <div id="pvPaymentOptions"></div>
+            </div>
+            <div class="box trade">
+              <h4>Trade-in Summary</h4>
+              <div class="box-row"><span>Trade Allowance</span><b id="pvTradeAllowance">$0</b></div>
+              <div class="box-row"><span>Trade Payoff</span><b id="pvTradePayoff">$0</b></div>
+              <div class="box-row"><span>Trade Equity</span><b id="pvTradeEquity">$0</b></div>
+            </div>
+          </div>
+
+          <div class="box deal" style="margin:12px 24px 0">
+            <h4>Deal Summary</h4>
+            <div class="box-row"><span>Sale Price</span><b id="pvDealSalePrice">$0</b></div>
+            <div class="box-row"><span>Government Fees</span><b id="pvDealGovFees">$0</b></div>
+            <div class="box-row"><span>Total Sales Price</span><b id="pvDealTotalSalesPrice">$0</b></div>
+            <div class="box-row"><span>Trade Equity</span><b id="pvDealTradeEquity">$0</b></div>
+            <div class="box-row"><span>Cash Down</span><b id="pvDealCashDown">$0</b></div>
+            <div class="box-row"><span>Amount Financed</span><b id="pvDealAmountFinanced">$0</b></div>
+          </div>
+
           <div class="pv-foot">Payments are estimates and subject to approved credit and program eligibility. Excludes tax, title, and license fees.</div>
         </div>
       </section>
@@ -240,6 +290,16 @@
         "amountFinanced","payment","apr","term","stockNumber","vin","vehicleColor",
         "vehicleMileage","salesPrice","totalSalesPrice","tradeAllowance","tradePayoff"
       ];
+      let extraData = {
+        governmentFees: 0,
+        accessories: 0,
+        serviceContract: 0,
+        gap: 0,
+        procDocFees: 0,
+        cashDown: 0,
+        rebate: 0,
+        paymentOptions: [],
+      };
 
       const num = (v) => Number(v || 0);
       const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -262,6 +322,28 @@
         document.getElementById("pvPayment").textContent = Math.round(num(document.getElementById("payment").value));
         document.getElementById("pvApr").textContent = num(document.getElementById("apr").value).toFixed(2).replace(/\.00$/, "");
         document.getElementById("pvTerm").textContent = num(document.getElementById("term").value);
+
+        const tradeAllowance = num(document.getElementById("tradeAllowance").value);
+        const tradePayoff = num(document.getElementById("tradePayoff").value);
+        const tradeEquity = num(document.getElementById("tradeEquity").value);
+        document.getElementById("pvTradeAllowance").textContent = currency(tradeAllowance);
+        document.getElementById("pvTradePayoff").textContent = currency(tradePayoff);
+        const equityEl = document.getElementById("pvTradeEquity");
+        equityEl.textContent = currency(tradeEquity);
+        equityEl.className = tradeEquity < 0 ? "negative" : "positive";
+
+        document.getElementById("pvDealSalePrice").textContent = currency(salesPrice);
+        document.getElementById("pvDealGovFees").textContent = currency(extraData.governmentFees);
+        document.getElementById("pvDealTotalSalesPrice").textContent = currency(num(document.getElementById("totalSalesPrice").value));
+        document.getElementById("pvDealTradeEquity").textContent = currency(tradeEquity);
+        document.getElementById("pvDealCashDown").textContent = currency(extraData.cashDown);
+        document.getElementById("pvDealAmountFinanced").textContent = currency(document.getElementById("amountFinanced").value);
+
+        const options = Array.isArray(extraData.paymentOptions) ? extraData.paymentOptions.slice(0, 2) : [];
+        const rows = options.map((o) =>
+          `<div class=\"box-row\"><span>${num(o.term)} mo • ${num(o.apr).toFixed(2).replace(/\\.00$/, \"\")}%</span><b>${currency(o.payment)}/mo</b></div>`
+        ).join("");
+        document.getElementById("pvPaymentOptions").innerHTML = rows || `<div class=\"box-row\"><span>Selected Terms</span><b>${currency(document.getElementById("payment").value)}/mo</b></div>`;
       }
 
       function setError(msg) {
@@ -269,6 +351,17 @@
       }
 
       function fillForm(data) {
+        extraData = {
+          ...extraData,
+          governmentFees: num(data.governmentFees),
+          accessories: num(data.accessories),
+          serviceContract: num(data.serviceContract),
+          gap: num(data.gap),
+          procDocFees: num(data.procDocFees),
+          cashDown: num(data.cashDown),
+          rebate: num(data.rebate),
+          paymentOptions: Array.isArray(data.paymentOptions) ? data.paymentOptions : [],
+        };
         for (const key of fields) {
           const el = document.getElementById(key);
           if (!el || data[key] == null) continue;

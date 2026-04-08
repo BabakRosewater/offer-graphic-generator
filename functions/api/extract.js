@@ -43,7 +43,17 @@ Return ONLY strict JSON exactly in this shape:
   "stockNumber": "",
   "vin": "",
   "vehicleColor": "",
-  "vehicleMileage": 0
+  "vehicleMileage": 0,
+  "governmentFees": 0,
+  "accessories": 0,
+  "serviceContract": 0,
+  "gap": 0,
+  "procDocFees": 0,
+  "cashDown": 0,
+  "rebate": 0,
+  "paymentOptions": [
+    { "term": 0, "apr": 0, "payment": 0 }
+  ]
 }
 
 Rules:
