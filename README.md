@@ -15,6 +15,7 @@ Cloudflare Pages single-page app for turning purchase agreement uploads into rev
 - **Backend (`functions/api/extract.js`)**
   - Calls Gemini server-side
   - Reads `GEMINI_API_KEY` and optional `GEMINI_MODEL` from Cloudflare env
+  - Optionally enriches extracted vehicle metadata using inventory endpoint
   - Returns normalized JSON payload
 - **Normalization (`lib/normalize-deal-data.js`)**
   - Enforces stable output shape and type-safe numeric parsing
@@ -33,8 +34,18 @@ Do not use lowest matrix payment unless Selected Terms is missing.
 
 - `GEMINI_API_KEY` (required)
 - `GEMINI_MODEL` (optional, default: `gemini-2.5-flash`)
+- `INVENTORY_MATCH_BASE_URL` (optional, default: `https://clark-inventory-finder.pages.dev`)
 
 No client-side API key is used.
+
+## Optional inventory enrichment (best-effort)
+
+After Gemini extraction succeeds, `/api/extract` can call:
+
+- `${INVENTORY_MATCH_BASE_URL}/api/vehicle-match?vin=...` (preferred first)
+- `${INVENTORY_MATCH_BASE_URL}/api/vehicle-match?stock=...` (fallback)
+
+This enrichment is non-blocking. If inventory lookup fails/times out/no-match, the endpoint still returns Gemini-normalized data.
 
 ## API response shape
 
@@ -63,6 +74,9 @@ No client-side API key is used.
     "vin": "",
     "vehicleColor": "",
     "vehicleMileage": 0,
+    "imageUrl": "",
+    "inventoryStatus": "",
+    "inventoryMatchType": "",
     "governmentFees": 0,
     "cashDown": 0,
     "paymentOptions": [{ "term": 60, "apr": 1.99, "payment": 427 }]

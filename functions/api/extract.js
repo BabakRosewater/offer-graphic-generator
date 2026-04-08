@@ -2,6 +2,7 @@ import { parsePurchaseAgreement } from "../../lib/parse-purchase-agreement.js";
 import { normalizeDealData } from "../../lib/normalize-deal-data.js";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
+const DEFAULT_INVENTORY_BASE_URL = "https://clark-inventory-finder.pages.dev";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -115,6 +116,71 @@ async function callGemini(context, mimeType, imageBase64) {
   return normalizeDealData(parsePurchaseAgreement(parsed));
 }
 
+function normalizeVin(vin) {
+  return String(vin || "").toUpperCase().replace(/[^A-Z0-9]/g, "").trim();
+}
+
+function normalizeStock(stock) {
+  return String(stock || "").toUpperCase().replace(/[^A-Z0-9-]/g, "").trim();
+}
+
+async function fetchInventoryMatch(baseUrl, key, value, timeoutMs = 2500) {
+  const url = new URL("/api/vehicle-match", baseUrl);
+  url.searchParams.set(key, value);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort("inventory_timeout"), timeoutMs);
+  try {
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      signal: controller.signal,
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    if (!payload?.ok || !payload?.vehicle) return null;
+    return payload;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function applyInventoryEnrichment(baseData, payload) {
+  if (!payload?.ok || !payload?.vehicle) return baseData;
+  const vehicle = payload.vehicle;
+  const enriched = {
+    ...baseData,
+    stockNumber: String(vehicle.stockNumber || baseData.stockNumber || ""),
+    vin: String(vehicle.vin || baseData.vin || ""),
+    vehicleName: String(vehicle.vehicleName || baseData.vehicleName || ""),
+    vehicleColor: String(vehicle.color || baseData.vehicleColor || ""),
+    vehicleMileage: Number(vehicle.mileage ?? baseData.vehicleMileage ?? 0) || 0,
+    imageUrl: String(vehicle.imageUrl || ""),
+    inventoryStatus: String(vehicle.status || ""),
+    inventoryMatchType: String(payload.matchType || ""),
+  };
+  return normalizeDealData(enriched);
+}
+
+async function enrichWithInventory(context, normalizedData) {
+  const baseUrl = context.env?.INVENTORY_MATCH_BASE_URL || DEFAULT_INVENTORY_BASE_URL;
+  const vin = normalizeVin(normalizedData.vin);
+  const stock = normalizeStock(normalizedData.stockNumber);
+  if (!vin && !stock) return normalizedData;
+
+  let match = null;
+  if (vin) {
+    match = await fetchInventoryMatch(baseUrl, "vin", vin);
+  }
+  if (!match && stock) {
+    match = await fetchInventoryMatch(baseUrl, "stock", stock);
+  }
+
+  return match ? applyInventoryEnrichment(normalizedData, match) : normalizedData;
+}
+
 export async function onRequestPost(context) {
   try {
     const contentType = context.request.headers.get("content-type") || "";
@@ -135,11 +201,12 @@ export async function onRequestPost(context) {
     }
 
     const normalized = await callGemini(context, mimeType, imageBase64);
+    const enriched = await enrichWithInventory(context, normalized);
 
     return json({
       ok: true,
       source_type: "image_ai_fallback",
-      data: normalized,
+      data: enriched,
     });
   } catch (error) {
     return buildError(
