@@ -216,9 +216,9 @@ async function fetchStaffPhoto(context, staffName) {
 
   const requestUrl = new URL(context.request.url);
   const staffBaseUrl = context.env?.STAFF_PHOTO_BASE_URL
+    || requestUrl.origin
     || context.env?.INVENTORY_MATCH_BASE_URL
-    || DEFAULT_STAFF_PHOTO_BASE_URL
-    || requestUrl.origin;
+    || DEFAULT_STAFF_PHOTO_BASE_URL;
   const url = new URL("/api/staff-photo", staffBaseUrl);
   url.searchParams.set("firstName", firstName);
   url.searchParams.set("lastName", lastName);
