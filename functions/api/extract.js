@@ -207,7 +207,7 @@ async function enrichWithInventory(context, normalizedData) {
 function splitStaffName(staffName = "") {
   const parts = String(staffName).trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return { firstName: "", lastName: "" };
-  return { firstName: parts[0], lastName: parts.slice(1).join(" ") || "" };
+  return { firstName: parts[0], lastName: parts[parts.length - 1] || "" };
 }
 
 async function fetchStaffPhoto(context, staffName) {
