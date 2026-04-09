@@ -203,6 +203,51 @@ async function enrichWithInventory(context, normalizedData) {
   return match ? applyInventoryEnrichment(normalizedData, match) : normalizedData;
 }
 
+function splitStaffName(staffName = "") {
+  const parts = String(staffName).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return { firstName: "", lastName: "" };
+  return { firstName: parts[0], lastName: parts.slice(1).join(" ") || "" };
+}
+
+async function fetchStaffPhoto(context, staffName) {
+  const { firstName, lastName } = splitStaffName(staffName);
+  if (!firstName || !lastName) return { staffPhotoUrl: "", staffPhotoStatus: "missing_params" };
+
+  const requestUrl = new URL(context.request.url);
+  const url = new URL("/api/staff-photo", requestUrl.origin);
+  url.searchParams.set("firstName", firstName);
+  url.searchParams.set("lastName", lastName);
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: { accept: "application/json" },
+    });
+
+    if (response.status === 200) {
+      const payload = await response.json();
+      return {
+        staffPhotoUrl: String(payload?.photoUrl || "").trim(),
+        staffPhotoStatus: payload?.photoUrl ? "found" : "no_photo_found",
+      };
+    }
+    if (response.status === 404) return { staffPhotoUrl: "", staffPhotoStatus: "no_photo_found" };
+    if (response.status === 400) return { staffPhotoUrl: "", staffPhotoStatus: "missing_params" };
+    if (response.status === 405) return { staffPhotoUrl: "", staffPhotoStatus: "method_not_allowed" };
+    if (response.status === 502) return { staffPhotoUrl: "", staffPhotoStatus: "backend_roster_load_error" };
+    return { staffPhotoUrl: "", staffPhotoStatus: `staff_photo_http_${response.status}` };
+  } catch {
+    return { staffPhotoUrl: "", staffPhotoStatus: "staff_photo_lookup_error" };
+  }
+}
+
+async function enrichWithStaffPhoto(context, normalizedData) {
+  const staffName = String(normalizedData.staffName || "").trim();
+  if (!staffName) return normalizedData;
+  const staffPhoto = await fetchStaffPhoto(context, staffName);
+  return normalizeDealData({ ...normalizedData, ...staffPhoto });
+}
+
 export async function onRequestPost(context) {
   try {
     const contentType = context.request.headers.get("content-type") || "";
@@ -223,7 +268,8 @@ export async function onRequestPost(context) {
     }
 
     const normalized = await callGemini(context, mimeType, imageBase64);
-    const enriched = await enrichWithInventory(context, normalized);
+    let enriched = await enrichWithInventory(context, normalized);
+    enriched = await enrichWithStaffPhoto(context, enriched);
 
     return json({
       ok: true,
