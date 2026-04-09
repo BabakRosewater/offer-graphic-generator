@@ -3,6 +3,7 @@ import { normalizeDealData } from "../../lib/normalize-deal-data.js";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 const DEFAULT_INVENTORY_BASE_URL = "https://clark-inventory-finder.pages.dev";
+const DEFAULT_STAFF_PHOTO_BASE_URL = "https://clark-inventory-finder.pages.dev";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -214,7 +215,11 @@ async function fetchStaffPhoto(context, staffName) {
   if (!firstName || !lastName) return { staffPhotoUrl: "", staffPhotoStatus: "missing_params" };
 
   const requestUrl = new URL(context.request.url);
-  const url = new URL("/api/staff-photo", requestUrl.origin);
+  const staffBaseUrl = context.env?.STAFF_PHOTO_BASE_URL
+    || context.env?.INVENTORY_MATCH_BASE_URL
+    || DEFAULT_STAFF_PHOTO_BASE_URL
+    || requestUrl.origin;
+  const url = new URL("/api/staff-photo", staffBaseUrl);
   url.searchParams.set("firstName", firstName);
   url.searchParams.set("lastName", lastName);
 
@@ -226,9 +231,17 @@ async function fetchStaffPhoto(context, staffName) {
 
     if (response.status === 200) {
       const payload = await response.json();
+      let photoUrl = String(payload?.photoUrl || "").trim();
+      if (photoUrl) {
+        try {
+          photoUrl = new URL(photoUrl, staffBaseUrl).toString().replace(/^http:\/\//i, "https://");
+        } catch {
+          photoUrl = "";
+        }
+      }
       return {
-        staffPhotoUrl: String(payload?.photoUrl || "").trim(),
-        staffPhotoStatus: payload?.photoUrl ? "found" : "no_photo_found",
+        staffPhotoUrl: photoUrl,
+        staffPhotoStatus: photoUrl ? "found" : "no_photo_found",
       };
     }
     if (response.status === 404) return { staffPhotoUrl: "", staffPhotoStatus: "no_photo_found" };

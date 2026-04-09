@@ -324,10 +324,16 @@
             const staffPhotoEl = document.getElementById('out-staffPhoto');
             const staffPhotoIcon = document.getElementById('out-staffPhotoIcon');
             if (staffPhotoUrl) {
+                staffPhotoEl.onerror = () => {
+                    staffPhotoEl.removeAttribute('src');
+                    staffPhotoEl.classList.add('hidden-view');
+                    staffPhotoIcon.classList.remove('hidden-view');
+                };
                 staffPhotoEl.src = staffPhotoUrl;
                 staffPhotoEl.classList.remove('hidden-view');
                 staffPhotoIcon.classList.add('hidden-view');
             } else {
+                staffPhotoEl.onerror = null;
                 staffPhotoEl.removeAttribute('src');
                 staffPhotoEl.classList.add('hidden-view');
                 staffPhotoIcon.classList.remove('hidden-view');
