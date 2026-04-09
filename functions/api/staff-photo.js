@@ -20,6 +20,20 @@ function parseNameParts(fullName) {
 export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
+    if (url.searchParams.get("list") === "1") {
+      return json({
+        ok: true,
+        staff: STAFF_DIRECTORY.map((s) => ({
+          name: s.name,
+          title: s.title,
+          department: s.department,
+          group_id: s.group_id,
+          phone: s.phone,
+          photoUrl: s.photo,
+        })),
+      });
+    }
+
     const firstName = url.searchParams.get("firstName");
     const lastName = url.searchParams.get("lastName");
 
