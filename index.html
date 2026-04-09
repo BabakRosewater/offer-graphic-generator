@@ -413,7 +413,21 @@
             paymentFrequency.innerText = isLease
                 ? `Per Month • ${Number(formData.term) || 0} Months`
                 : (isCash ? 'Total Cash Due (Incl. Fees)' : 'Per Month');
-            if (isLease || isCash) {
+            if (isLease) {
+                paymentMainRow.classList.add('justify-center', 'gap-0');
+                paymentMainRow.classList.remove('gap-5', 'justify-between', 'gap-3', 'gap-2');
+                paymentMainBlock.classList.add('text-center');
+                paymentAmountEl.style.fontSize = '80px';
+                aprWrapEl.classList.remove('text-3xl');
+                aprWrapEl.classList.add('text-4xl');
+                paymentMainRow.style.display = 'block';
+                paymentMainRow.style.gridTemplateColumns = '';
+                paymentMainRow.style.columnGap = '';
+                paymentMainRow.style.alignItems = '';
+                paymentMainRow.style.minHeight = '';
+                termBadgeRow.classList.remove('mt-8');
+                termBadgeRow.classList.add('mt-6');
+            } else if (isCash) {
                 paymentMainRow.classList.add('justify-center', 'gap-0');
                 paymentMainRow.classList.remove('gap-5', 'justify-between', 'gap-3', 'gap-2');
                 paymentMainBlock.classList.add('text-center');
@@ -435,7 +449,7 @@
                 aprWrapEl.classList.remove('text-4xl');
                 aprWrapEl.classList.add('text-3xl');
                 paymentMainRow.style.display = 'grid';
-                paymentMainRow.style.gridTemplateColumns = 'minmax(0, 1fr) 132px';
+                paymentMainRow.style.gridTemplateColumns = 'minmax(0, 1fr) 1px 132px';
                 paymentMainRow.style.columnGap = '16px';
                 paymentMainRow.style.alignItems = 'center';
                 paymentMainRow.style.minHeight = '126px';
@@ -454,9 +468,9 @@
                 rateColumn.classList.add('hidden-view');
                 rateColumn.classList.remove('border-l', 'border-white/20', 'pl-4');
             } else {
-                rateDivider.classList.add('hidden-view');
+                rateDivider.classList.remove('hidden-view');
                 rateColumn.classList.remove('hidden-view');
-                rateColumn.classList.add('border-l', 'border-white/20', 'pl-4');
+                rateColumn.classList.remove('border-l', 'border-white/20', 'pl-4');
             }
             document.getElementById('out-rate-prefix').innerText = isLease ? 'Residual' : 'At';
             document.getElementById('out-rate-label').innerText = isLease ? 'RESIDUAL' : 'APR';
