@@ -241,6 +241,7 @@ async function fetchStaffPhoto(context, staffName) {
       }
       return {
         staffPhotoUrl: photoUrl,
+        staffPhone: String(payload?.phone || "").trim(),
         staffPhotoStatus: photoUrl ? "found" : "no_photo_found",
       };
     }
