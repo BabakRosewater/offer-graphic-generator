@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Graphic Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .hidden-view { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-100 p-4 md:p-8 font-sans text-slate-800 min-h-screen">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-blue-900 rounded-lg text-white shadow-sm">
+                    <i data-lucide="layout-template" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Offer Graphic Generator</h1>
+                    <p class="text-slate-500">Transform internal quotes into mobile-friendly summaries.</p>
+                </div>
+            </div>
+            <button id="btn-start-over" class="hidden-view text-sm font-medium text-slate-500 hover:text-blue-600 flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 transition-colors">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Start Over
+            </button>
+        </header>
+
+        <div id="view-upload" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center min-h-[500px]">
+            <div id="drop-zone" class="w-full max-w-2xl border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-center p-12 hover:bg-slate-50 transition-colors cursor-pointer">
+                <div class="bg-blue-50 text-blue-900 p-5 rounded-full mb-6">
+                    <i data-lucide="upload" class="w-10 h-10"></i>
+                </div>
+                <h3 class="font-bold text-2xl text-slate-800 mb-2">Upload Purchase Agreement</h3>
+                <p class="text-slate-500 mb-8 max-w-md">Upload your internal deal sheet (PDF or Image). The system will extract the data and build a customer-facing summary card.</p>
+                <div class="flex gap-2 justify-center mb-6">
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">PDF</span>
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">PNG</span>
+                    <span class="text-xs font-medium text-slate-500 bg-white px-3 py-1 border border-slate-200 rounded-full shadow-sm">JPG</span>
+                </div>
+                <button class="bg-blue-900 text-white px-6 py-3 rounded-lg font-medium shadow-sm hover:bg-blue-800 transition-colors pointer-events-none">Browse Files</button>
+                <input type="file" id="file-input" accept="application/pdf, image/*" class="hidden" />
+            </div>
+        </div>
+
+        <div id="view-extracting" class="hidden-view bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center min-h-[500px]">
+            <div class="flex flex-col items-center text-center">
+                <i data-lucide="loader-2" class="w-12 h-12 text-blue-900 spinner mb-6"></i>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Processing Document...</h3>
+                <p class="text-slate-500" id="extraction-status">Analyzing document securely...</p>
+            </div>
+        </div>
+
+        <div id="view-review" class="hidden-view flex flex-col lg:flex-row gap-8 items-start">
+            <div class="w-full lg:w-[350px] flex-shrink-0 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-slate-100 bg-blue-50/50 flex justify-between items-center">
+                    <h2 class="font-semibold text-blue-900 flex items-center gap-2"><i data-lucide="file-image" class="w-4 h-4"></i> Review Extracted Data</h2>
+                </div>
+                <div class="p-6 space-y-4 flex-1 overflow-y-auto max-h-[700px] custom-scrollbar">
+                    <form id="data-form" class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Deal Type</label>
+                            <div class="grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-1 border border-slate-200">
+                                <button type="button" data-deal-type="lease" class="deal-type-btn text-xs font-bold px-2 py-2 rounded-lg text-slate-600">Lease</button>
+                                <button type="button" data-deal-type="finance_purchase" class="deal-type-btn text-xs font-bold px-2 py-2 rounded-lg text-slate-600">Finance</button>
+                                <button type="button" data-deal-type="cash_purchase" class="deal-type-btn text-xs font-bold px-2 py-2 rounded-lg text-slate-600">Cash</button>
+                            </div>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Vehicle Condition</label>
+                            <div class="grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-1 border border-slate-200">
+                                <button type="button" data-vehicle-condition="new" class="condition-btn text-xs font-bold px-2 py-2 rounded-lg text-slate-600">New</button>
+                                <button type="button" data-vehicle-condition="used" class="condition-btn text-xs font-bold px-2 py-2 rounded-lg text-slate-600">Used</button>
+                                <button type="button" data-vehicle-condition="cpo" class="condition-btn text-xs font-bold px-2 py-2 rounded-lg text-slate-600">CPO</button>
+                            </div>
+                        </div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Customer Name</label><div class="relative"><i data-lucide="user" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="text" id="in-customerName" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Staff Name</label><div class="relative"><i data-lucide="badge-check" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><select id="in-staffName" class="w-full border border-slate-300 rounded-lg pl-10 pr-8 py-2 focus:ring-2 focus:ring-blue-900 outline-none bg-white"><option value="">Select staff member</option></select></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Vehicle</label><div class="relative"><i data-lucide="car" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="text" id="in-vehicleName" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Retail Price</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-retailPrice" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Discount</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-discount" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div id="field-rebate" class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Rebate</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-rebate" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Allowance</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradeAllowance" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Payoff</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradePayoff" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Equity (+/-)</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradeEquity" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div id="field-amount-financed" class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Amount Financed</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-amountFinanced" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label id="label-payment" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Monthly Payment</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-payment" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none text-lg font-bold text-blue-900" /></div></div>
+                        <div id="field-apr"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">APR %</label><div class="relative"><i data-lucide="percent" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" step="0.01" id="in-apr" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div id="field-term"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Term (Mo)</label><div class="relative"><i data-lucide="calendar" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-term" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div id="field-residual" class="col-span-2 hidden-view"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Residual %</label><div class="relative"><i data-lucide="percent" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" step="0.01" id="in-residualPercent" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                    </form>
+                </div>
+                <div class="p-4 bg-slate-50 border-t border-slate-100">
+                    <button id="btn-download" class="w-full py-4 px-4 bg-blue-900 hover:bg-blue-800 text-white rounded-xl font-medium text-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-900/20"><i data-lucide="download" id="icon-download" class="w-6 h-6"></i><i data-lucide="loader-2" id="icon-generating" class="w-6 h-6 spinner hidden-view"></i><span id="text-download">Download Graphic</span></button>
+                </div>
+            </div>
+
+            <div class="w-full flex-1 flex justify-center items-start bg-slate-200/50 rounded-3xl p-4 md:p-8 border border-slate-200 border-dashed overflow-x-auto">
+                <div id="graphic-canvas" class="bg-white w-full max-w-[700px] relative font-sans shadow-2xl overflow-hidden rounded-md border border-slate-100">
+                    <div class="flex justify-between items-stretch bg-white border-b-[6px] border-[#0f2846]"><div class="bg-[#0f2846] text-white px-8 py-5 flex items-center gap-3 rounded-br-[32px] w-[55%]"><i data-lucide="aperture" class="w-8 h-8 opacity-90"></i><span class="font-black text-2xl tracking-wider">CLARK HYUNDAI</span></div><div class="px-6 py-4 flex items-center gap-3 text-[#1e4b82] w-[45%] justify-end"><i data-lucide="check-circle-2" class="w-10 h-10"></i><span class="font-bold text-sm leading-tight text-left uppercase"><span id="out-headerCustomerName" class="block text-[10px] text-slate-500 normal-case tracking-normal mb-0.5">For Customer</span>Your Personalized<br/>Offer Summary</span></div></div>
+                    <div class="flex p-8 items-center border-b border-slate-100"><div class="flex-1 pr-4"><h2 id="out-vehYearMake" class="text-3xl text-[#1e4b82] font-semibold mb-1">2026 Hyundai</h2><h1 id="out-vehModel" class="text-5xl text-[#0f2846] font-black tracking-tight leading-none mb-3">Elantra Hybrid</h1><div class="mt-1 flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden"><img id="out-staffPhoto" class="hidden-view w-full h-full object-cover" alt="Staff Photo"/><i id="out-staffPhotoIcon" data-lucide="user-circle-2" class="w-7 h-7 text-slate-400"></i></div><div><p id="out-staffNameDisplay" class="text-slate-500 font-medium tracking-wide">Staff: —</p><p id="out-staffPhoneDisplay" class="text-slate-400 text-xs">Phone: —</p></div></div><p id="out-vehicleMeta" class="text-slate-400 text-sm mt-1">—</p></div><div class="w-[250px] h-[140px] flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-slate-200 text-slate-400 overflow-hidden"><img id="out-vehicleImage" class="hidden-view w-full h-full object-cover" alt="Vehicle"/><div id="out-vehiclePlaceholder" class="flex flex-col items-center justify-center"><i data-lucide="car-front" class="w-16 h-16 mb-2 opacity-50"></i><span class="text-xs font-bold uppercase tracking-wider opacity-60">Vehicle Image</span></div></div></div>
+                    <div class="mx-8 mt-6"><div class="flex items-stretch border border-slate-200 rounded-2xl overflow-hidden shadow-sm relative"><div class="flex-1 text-center py-4 px-2"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Retail Price</div><div id="out-retailPrice" class="text-3xl font-black text-slate-800">$0</div></div><div class="absolute left-1/3 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden" id="badge-discount"><div class="bg-slate-300 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xl shadow-sm">-</div></div><div class="flex-1 text-center py-4 px-2 bg-slate-50" id="col-discount"><div class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Discount</div><div id="out-discount" class="text-3xl font-black text-green-600">-$0</div></div><div class="absolute left-2/3 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden" id="badge-equals"><div class="bg-blue-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xl shadow-sm border-2 border-white">=</div></div><div class="flex-1 text-center py-4 px-2 bg-[#0f2846] text-white"><div class="text-[11px] font-bold text-white/80 uppercase tracking-widest mb-1">Sale Price</div><div id="out-salePrice" class="text-4xl font-black">$0</div></div></div><div id="out-saveRibbon" class="text-center mt-4"><span class="inline-flex items-center gap-2 bg-blue-50 text-[#1e4b82] px-5 py-2 rounded-full font-bold text-sm shadow-sm border border-blue-100"><i data-lucide="tag" class="w-4 h-4 fill-current"></i> YOU SAVE <span id="out-discountAmt" class="text-lg">$0</span> <span class="text-slate-500 font-medium text-xs ml-1">OFF THE RETAIL PRICE!</span></span></div></div>
+                    <div id="section-main-offer" class="mx-8 mt-6 grid grid-cols-2 gap-6"><div id="section-hero-card" class="bg-[#1e4b82] rounded-2xl p-6 text-white flex flex-col justify-center shadow-lg relative overflow-hidden"><div id="out-payment-title" class="text-xs font-bold text-white/80 uppercase tracking-wider mb-4 relative z-10">Your Estimated Payment</div><div id="out-payment-main-row" class="flex items-end gap-5 relative z-10"><div id="out-payment-main-block"><div class="flex items-start leading-none tracking-tighter"><span class="text-4xl font-bold mt-2 mr-1">$</span><span id="out-payment" class="text-[80px] font-black">0</span></div><div id="out-payment-frequency" class="text-sm font-bold uppercase tracking-wider mt-4 text-white/90">Per Month</div></div><div id="out-rate-divider" class="w-px h-20 bg-white/20 mb-2"></div><div id="out-rate-column" class="pb-2 ml-4 text-right min-w-[92px]"><div id="out-rate-prefix" class="text-xs font-bold text-white/80 uppercase tracking-widest mb-1">At</div><div class="text-4xl font-black leading-none mb-1"><span id="out-apr">0</span><span id="out-apr-unit">%</span></div><div id="out-rate-label" class="text-sm font-bold uppercase tracking-wider text-white/90">APR</div></div></div><div id="out-cash-details" class="hidden-view mt-4 bg-black/20 border border-white/10 rounded-lg p-3 text-xs leading-relaxed"><div><span class="font-bold">Fees/Taxes/Doc:</span> <span id="out-cash-fees">$0</span></div><div><span class="font-bold">Cash Applied:</span> <span id="out-cash-applied">$0</span></div><div class="font-bold uppercase tracking-wider mt-1">No Financing</div></div><div class="mt-8 text-center text-sm font-bold tracking-widest text-white bg-black/20 py-2.5 rounded-lg border border-white/10 relative z-10"><i data-lucide="calendar" class="w-4 h-4 inline pb-0.5 mr-1"></i> <span id="out-termBadge">FOR 0 MONTHS</span></div></div><div id="section-payment-options" class="border border-slate-200 rounded-2xl p-5 shadow-sm bg-white flex flex-col"><div class="text-xs font-bold text-slate-800 uppercase tracking-wider text-center border-b-2 border-slate-100 pb-3 mb-4">Payment Options</div><div class="flex-1 flex flex-col justify-center gap-4"><div class="flex justify-between items-center py-2"><div><div class="font-black text-2xl text-[#1e4b82]"><span id="out-opt1-term">0</span> <span id="out-opt1-term-suffix" class="text-sm tracking-wider uppercase text-[#1e4b82]/80">Months</span></div><div class="text-sm text-slate-500 font-bold mt-1"><span id="out-opt1-apr">0</span><span id="out-opt1-unit">%</span> <span id="out-opt1-label">APR</span></div></div><div class="text-3xl font-black text-slate-800">$<span id="out-opt1-pmt">0</span> <span class="text-lg text-slate-400 font-semibold">/mo</span></div></div><div id="out-opt2-row" class="flex justify-between items-center py-2 border-t border-slate-100 hidden-view"><div><div class="font-black text-2xl text-[#1e4b82]"><span id="out-opt2-term">0</span> <span id="out-opt2-term-suffix" class="text-sm tracking-wider uppercase text-[#1e4b82]/80">Months</span></div><div class="text-sm text-slate-500 font-bold mt-1"><span id="out-opt2-apr">0</span><span id="out-opt2-unit">%</span> <span id="out-opt2-label">APR</span></div></div><div class="text-3xl font-black text-slate-800">$<span id="out-opt2-pmt">0</span> <span class="text-lg text-slate-400 font-semibold">/mo</span></div></div><div class="text-center py-2 text-xs font-medium text-slate-400">*Additional terms may be available.</div></div></div></div>
+                    <div id="section-lease-benefits" class="mx-8 mt-5 hidden-view bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-100 rounded-2xl p-8 text-[#0f2846] shadow-sm">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-blue-700"></i>
+                            <div class="font-black uppercase tracking-wider text-lg">Why Lease a Hyundai?</div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-4 text-base leading-relaxed">
+                            <div class="bg-white/85 border border-blue-100 rounded-xl p-4"><span class="font-bold text-blue-900">Lower Payments:</span> Less than traditional financing.</div>
+                            <div class="bg-white/85 border border-blue-100 rounded-xl p-4"><span class="font-bold text-blue-900">Smaller Upfront Costs:</span> Often requires less money at signing.</div>
+                            <div class="bg-white/85 border border-blue-100 rounded-xl p-4"><span class="font-bold text-blue-900">End-of-Lease Flexibility:</span> Return, buy, or lease something new.</div>
+                        </div>
+                    </div>
+                    <div class="mx-8 mt-6 grid grid-cols-2 gap-6 pb-6 border-b border-slate-200"><div id="section-trade" class="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl flex flex-col"><div class="p-4 border-b border-[#bbf7d0] flex items-center gap-2 text-green-800 font-black text-sm uppercase tracking-widest"><i data-lucide="refresh-cw" class="w-5 h-5"></i> Trade-In Summary</div><div class="p-5 space-y-4 flex-1 text-[15px]"><div class="flex justify-between font-bold text-slate-700"><span>Trade Allowance</span><span id="out-tradeAllowance" class="text-green-700">$0</span></div><div class="flex justify-between font-bold text-slate-700"><span>Trade Payoff</span><span id="out-tradePayoff" class="text-red-600">-$0</span></div><div class="pt-4 mt-2 border-t border-green-200/60 flex justify-between items-end"><div><div class="font-black text-green-800 uppercase tracking-wide">Trade Equity</div><div class="text-xs text-green-700/80 font-medium leading-tight mt-1">Rolled into your new loan</div></div><span id="out-tradeEquity" class="text-2xl font-black text-red-600">$0</span></div></div></div><div id="section-deal-summary" class="bg-blue-50/50 border border-blue-100 rounded-2xl flex flex-col overflow-hidden"><div class="p-4 border-b border-blue-100 flex items-center gap-2 text-[#1e4b82] font-black text-sm uppercase tracking-widest"><i data-lucide="file-text" class="w-5 h-5"></i> <span id="out-summary-title">Deal Summary</span></div><div class="p-5 space-y-3 flex-1 text-[13px] font-bold text-slate-600"><div class="flex justify-between"><span>Sale Price</span><span id="out-summarySalePrice" class="text-slate-800">$0</span></div><div class="flex justify-between"><span>Government Fees</span><span id="out-summaryGovernmentFees" class="text-slate-800">$0</span></div><div class="flex justify-between"><span>Total Sales Price</span><span id="out-summaryTotalSalesPrice" class="text-slate-800">$0</span></div><div id="row-summaryTradeEquity" class="flex justify-between"><span>Trade Equity (Rolled In)</span><span id="out-summaryTradeEquity" class="text-slate-800">$0</span></div></div><div id="row-amount-financed" class="bg-[#0f2846] px-5 py-4 flex justify-between items-center text-white"><span id="out-amount-financed-label" class="font-bold uppercase tracking-widest text-xs">Amount Financed</span><span id="out-amountFinanced" class="text-2xl font-black">$0</span></div></div></div>
+                    <div class="mx-8 py-6 flex justify-between items-center"><div class="flex items-center gap-3 text-slate-500 w-2/3"><i data-lucide="shield-check" class="w-10 h-10 text-blue-800 opacity-80 flex-shrink-0"></i><p class="text-[11px] leading-tight font-medium">Payments are estimates and subject to approved credit and program eligibility. Excludes tax, title, and license fees.</p></div><div class="text-right"><div class="text-xl font-serif italic text-[#1e4b82] font-medium">Thank you!</div><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">We appreciate your business.</div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let formData = {
+            customerName: '', staffName: '', staffPhone: '', staffPhotoUrl: '', staffPhotoStatus: '', vehicleName: '', retailPrice: 0, discount: 0,
+            tradeAllowance: 0, tradePayoff: 0, tradeEquity: 0,
+            amountFinanced: 0, payment: 0, apr: 0, term: 0,
+            salesPrice: 0, totalSalesPrice: 0, imageUrl: '',
+            vehicleColor: '', vehicleMileage: 0, inventoryStatus: '',
+            governmentFees: 0, procDocFees: 0, cashDown: 0, paymentOptions: [], transactionType: '', residualPercent: 0, rebate: 0, vehicleCondition: ''
+        };
+
+        const viewUpload = document.getElementById('view-upload');
+        const viewExtracting = document.getElementById('view-extracting');
+        const viewReview = document.getElementById('view-review');
+        const btnStartOver = document.getElementById('btn-start-over');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        const inputs = ['customerName', 'staffName', 'vehicleName', 'retailPrice', 'discount', 'rebate', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent', 'salesPrice', 'totalSalesPrice'];
+        const numberFields = ['retailPrice', 'discount', 'rebate', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent', 'salesPrice', 'totalSalesPrice', 'vehicleMileage', 'governmentFees'];
+        let staffDirectory = [];
+
+        function syncStaffPhotoFromSelection() {
+            const selected = staffDirectory.find((s) => s.name === formData.staffName);
+            if (selected?.photoUrl) formData.staffPhotoUrl = selected.photoUrl;
+            if (selected?.phone) formData.staffPhone = selected.phone;
+        }
+
+        async function loadStaffDirectory() {
+            try {
+                const res = await fetch('/api/staff-photo?list=1', { method: 'GET', headers: { accept: 'application/json' } });
+                const payload = await res.json();
+                if (!res.ok || !payload?.ok || !Array.isArray(payload.staff)) return;
+                staffDirectory = payload.staff;
+                const select = document.getElementById('in-staffName');
+                select.innerHTML = '<option value=\"\">Select staff member</option>';
+                staffDirectory.forEach((staff) => {
+                    const opt = document.createElement('option');
+                    opt.value = staff.name;
+                    opt.textContent = `${staff.name} • ${staff.title}`;
+                    select.appendChild(opt);
+                });
+                if (formData.staffName) select.value = formData.staffName;
+            } catch {}
+        }
+
+        function updateDealUiToggles() {
+            const type = String(formData.transactionType || '').toLowerCase();
+            const isLease = type === 'lease';
+            const isCash = type === 'cash_purchase';
+
+            document.getElementById('field-apr').classList.toggle('hidden-view', isLease || isCash);
+            document.getElementById('field-amount-financed').classList.toggle('hidden-view', isLease || isCash);
+            document.getElementById('field-residual').classList.toggle('hidden-view', !isLease);
+            document.getElementById('label-payment').innerText = isLease ? 'Lease Payment' : (isCash ? 'Cash Due' : 'Monthly Payment');
+
+            document.querySelectorAll('.deal-type-btn').forEach((btn) => {
+                const active = btn.dataset.dealType === type;
+                btn.classList.toggle('bg-white', active);
+                btn.classList.toggle('text-blue-900', active);
+                btn.classList.toggle('shadow-sm', active);
+                btn.classList.toggle('text-slate-600', !active);
+            });
+
+            const condition = String(formData.vehicleCondition || '').toLowerCase();
+            document.querySelectorAll('.condition-btn').forEach((btn) => {
+                const active = btn.dataset.vehicleCondition === condition;
+                btn.classList.toggle('bg-white', active);
+                btn.classList.toggle('text-blue-900', active);
+                btn.classList.toggle('shadow-sm', active);
+                btn.classList.toggle('text-slate-600', !active);
+            });
+        }
+
+        const formatCurrency = (amount) => {
+            const n = Number(amount || 0);
+            const v = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Math.abs(n));
+            return n < 0 ? `-${v}` : v;
+        };
+
+        function setViewState(state) {
+            viewUpload.classList.add('hidden-view');
+            viewExtracting.classList.add('hidden-view');
+            viewReview.classList.add('hidden-view');
+            btnStartOver.classList.add('hidden-view');
+            if (state === 'upload') viewUpload.classList.remove('hidden-view');
+            if (state === 'extracting') viewExtracting.classList.remove('hidden-view');
+            if (state === 'review') {
+                viewReview.classList.remove('hidden-view');
+                btnStartOver.classList.remove('hidden-view');
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+            });
+        }
+
+        async function convertPdfToImage(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport }).promise;
+            return canvas.toDataURL('image/png');
+        }
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-slate-50'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-slate-50'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-slate-50');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+
+        async function handleFile(file) {
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a PDF or an Image file (PNG/JPG).');
+                return;
+            }
+
+            setViewState('extracting');
+            const statusText = document.getElementById('extraction-status');
+            try {
+                let base64Clean = '';
+                let mimeType = 'image/png';
+                if (file.type === 'application/pdf') {
+                    statusText.innerText = 'Converting PDF to image format...';
+                    const pdfDataUrl = await convertPdfToImage(file);
+                    base64Clean = pdfDataUrl.split(',')[1];
+                } else {
+                    const base64Data = await fileToBase64(file);
+                    base64Clean = base64Data.split(',')[1];
+                    mimeType = file.type;
+                }
+
+                statusText.innerText = 'Extracting deal data...';
+                const response = await fetch('/api/extract', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ imageBase64: base64Clean, mimeType }),
+                });
+
+                const payload = await response.json();
+                if (!response.ok || !payload.ok) {
+                    throw new Error(payload.error || `Extraction failed (HTTP ${response.status})`);
+                }
+
+                updateFormData(payload.data || {});
+                setViewState('review');
+            } catch (err) {
+                console.error(err);
+                alert(err?.message || 'Error processing file. Please ensure it is a valid document.');
+                setViewState('upload');
+            }
+        }
+
+        function updateFormData(newData) {
+            formData = { ...formData, ...newData };
+            inputs.forEach(key => {
+                const input = document.getElementById(`in-${key}`);
+                if (input) input.value = formData[key] ?? '';
+            });
+            syncStaffPhotoFromSelection();
+            updateDealUiToggles();
+            renderGraphic();
+        }
+
+        document.getElementById('data-form').addEventListener('input', (e) => {
+            const key = e.target.id.replace('in-', '');
+            let value = e.target.value;
+            if (numberFields.includes(key)) value = Number(value) || 0;
+            formData[key] = value;
+            if (key === 'staffName') syncStaffPhotoFromSelection();
+            renderGraphic();
+        });
+
+        document.querySelectorAll('.deal-type-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                formData.transactionType = btn.dataset.dealType;
+                updateDealUiToggles();
+                renderGraphic();
+            });
+        });
+
+        document.querySelectorAll('.condition-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                formData.vehicleCondition = btn.dataset.vehicleCondition;
+                updateDealUiToggles();
+                renderGraphic();
+            });
+        });
+
+        function renderGraphic() {
+            const vehName = formData.vehicleName || 'Vehicle Description';
+            const parts = vehName.trim().split(/\s+/);
+            const yearMake = parts.length > 2 ? `${parts[0]} ${parts[1]}` : vehName;
+            const model = parts.length > 2 ? parts.slice(2).join(' ') : '';
+
+            document.getElementById('out-vehYearMake').innerText = yearMake;
+            document.getElementById('out-vehModel').innerText = model;
+            const headerCustomerName = document.getElementById('out-headerCustomerName');
+            if (headerCustomerName) headerCustomerName.innerText = formData.customerName ? `For ${formData.customerName}` : 'For Customer';
+            document.getElementById('out-staffNameDisplay').innerText = formData.staffName ? `Staff: ${formData.staffName}` : 'Staff: —';
+            document.getElementById('out-staffPhoneDisplay').innerText = formData.staffPhone ? `Phone: ${formData.staffPhone}` : 'Phone: —';
+            const staffPhotoUrl = String(formData.staffPhotoUrl || '').trim();
+            const staffPhotoEl = document.getElementById('out-staffPhoto');
+            const staffPhotoIcon = document.getElementById('out-staffPhotoIcon');
+            if (staffPhotoUrl) {
+                staffPhotoEl.onerror = () => {
+                    staffPhotoEl.removeAttribute('src');
+                    staffPhotoEl.classList.add('hidden-view');
+                    staffPhotoIcon.classList.remove('hidden-view');
+                };
+                staffPhotoEl.src = staffPhotoUrl;
+                staffPhotoEl.classList.remove('hidden-view');
+                staffPhotoIcon.classList.add('hidden-view');
+            } else {
+                staffPhotoEl.onerror = null;
+                staffPhotoEl.removeAttribute('src');
+                staffPhotoEl.classList.add('hidden-view');
+                staffPhotoIcon.classList.remove('hidden-view');
+            }
+            const metaBits = [formData.vehicleColor, Number(formData.vehicleMileage) > 0 ? `${Number(formData.vehicleMileage).toLocaleString()} miles` : '', formData.inventoryStatus].filter(Boolean);
+            document.getElementById('out-vehicleMeta').innerText = metaBits.join(' • ') || ' ';
+
+            document.getElementById('out-retailPrice').innerText = formatCurrency(formData.retailPrice);
+            const transactionType = String(formData.transactionType || '').toLowerCase();
+            const isLease = transactionType === 'lease';
+            const isCash = transactionType === 'cash_purchase';
+            const effectiveDiscount = (Number(formData.discount) || 0) + (Number(formData.rebate) || 0);
+            const salePrice = (Number(formData.salesPrice) || 0) > 0 ? Number(formData.salesPrice) : (Number(formData.retailPrice) || 0) - effectiveDiscount;
+            document.getElementById('out-salePrice').innerText = formatCurrency(salePrice);
+
+            const colDiscount = document.getElementById('col-discount');
+            const badgeDiscount = document.getElementById('badge-discount');
+            const badgeEquals = document.getElementById('badge-equals');
+            const saveRibbon = document.getElementById('out-saveRibbon');
+
+            if (effectiveDiscount > 0) {
+                colDiscount.classList.remove('hidden-view');
+                badgeDiscount.classList.remove('hidden');
+                badgeEquals.classList.remove('hidden');
+                document.getElementById('out-discount').innerText = `-${formatCurrency(effectiveDiscount).replace('-', '')}`;
+                saveRibbon.classList.remove('hidden-view');
+                document.getElementById('out-discountAmt').innerText = formatCurrency(effectiveDiscount).replace('-', '');
+            } else {
+                colDiscount.classList.add('hidden-view');
+                badgeDiscount.classList.add('hidden');
+                badgeEquals.classList.add('hidden');
+                saveRibbon.classList.add('hidden-view');
+            }
+
+            const residualPercent = Number(formData.residualPercent) || 0;
+            const primaryRate = isLease ? residualPercent : (Number(formData.apr) || 0);
+
+            const paymentTitle = document.getElementById('out-payment-title');
+            const paymentFrequency = document.getElementById('out-payment-frequency');
+            const paymentMainRow = document.getElementById('out-payment-main-row');
+            const paymentMainBlock = document.getElementById('out-payment-main-block');
+            paymentTitle.innerText = isLease
+                ? 'Your Estimated Lease Payment'
+                : (isCash ? 'Your Cash Purchase Summary' : 'Your Estimated Payment');
+            paymentFrequency.innerText = isLease
+                ? `Per Month • ${Number(formData.term) || 0} Months`
+                : (isCash ? 'Total Cash Due (Incl. Fees)' : 'Per Month');
+            if (isLease || isCash) {
+                paymentMainRow.classList.add('justify-center', 'gap-0');
+                paymentMainRow.classList.remove('gap-5');
+                paymentMainBlock.classList.add('text-center');
+            } else {
+                paymentMainRow.classList.remove('justify-center', 'gap-0');
+                paymentMainRow.classList.add('gap-5');
+                paymentMainBlock.classList.remove('text-center');
+            }
+
+            const cashDue = salePrice + (Number(formData.governmentFees) || 0) + (Number(formData.procDocFees) || 0) - (Number(formData.cashDown) || 0);
+            document.getElementById('out-payment').innerText = isCash ? Math.max(0, cashDue).toLocaleString() : (Number(formData.payment) || 0);
+            document.getElementById('out-apr').innerText = primaryRate;
+            document.getElementById('out-apr-unit').innerText = (isCash ? '' : '%');
+            const rateDivider = document.getElementById('out-rate-divider');
+            const rateColumn = document.getElementById('out-rate-column');
+            if (isLease || isCash) {
+                rateDivider.classList.add('hidden-view');
+                rateColumn.classList.add('hidden-view');
+            } else {
+                rateDivider.classList.remove('hidden-view');
+                rateColumn.classList.remove('hidden-view');
+            }
+            document.getElementById('out-rate-prefix').innerText = isLease ? 'Residual' : 'At';
+            document.getElementById('out-rate-label').innerText = isLease ? 'RESIDUAL' : 'APR';
+            document.getElementById('out-termBadge').innerText = isLease
+                ? `FOR ${Number(formData.term) || 0} MONTHS • ${primaryRate}% RESIDUAL`
+                : (isCash ? `TOTAL DUE • ${formatCurrency(Math.max(0, cashDue))}` : `FOR ${Number(formData.term) || 0} MONTHS`);
+            const cashDetails = document.getElementById('out-cash-details');
+            const cashFees = (Number(formData.governmentFees) || 0) + (Number(formData.procDocFees) || 0);
+            document.getElementById('out-cash-fees').innerText = formatCurrency(cashFees);
+            document.getElementById('out-cash-applied').innerText = formatCurrency(formData.cashDown);
+            if (isCash) cashDetails.classList.remove('hidden-view');
+            else cashDetails.classList.add('hidden-view');
+            const options = Array.isArray(formData.paymentOptions) && formData.paymentOptions.length ? formData.paymentOptions : [{ term: formData.term, apr: formData.apr, payment: formData.payment }];
+            const opt1 = options[0] || { term: formData.term, apr: formData.apr, payment: formData.payment };
+            document.getElementById('out-opt1-pmt').innerText = Number(opt1.payment) || 0;
+            const opt1Down = Number(opt1.cashDown ?? opt1.downPayment ?? 0) || 0;
+            document.getElementById('out-opt1-apr').innerText = isLease ? formatCurrency(opt1Down) : (Number(opt1.apr) || 0);
+            document.getElementById('out-opt1-unit').innerText = isLease ? '' : '%';
+            document.getElementById('out-opt1-term').innerText = isLease ? Number(opt1.term) || Number(formData.term) || 0 : Number(opt1.term) || 0;
+            document.getElementById('out-opt1-term-suffix').innerText = 'MONTHS';
+            document.getElementById('out-opt1-label').innerText = isLease ? 'DOWN' : 'APR';
+            const opt2 = options[1];
+            const opt2Row = document.getElementById('out-opt2-row');
+            if (opt2) {
+                document.getElementById('out-opt2-pmt').innerText = Number(opt2.payment) || 0;
+                const opt2Down = Number(opt2.cashDown ?? opt2.downPayment ?? (isLease ? 1000 : 0)) || 0;
+                document.getElementById('out-opt2-apr').innerText = isLease ? formatCurrency(opt2Down) : (Number(opt2.apr) || 0);
+                document.getElementById('out-opt2-unit').innerText = isLease ? '' : '%';
+                document.getElementById('out-opt2-term').innerText = isLease ? Number(opt2.term) || Number(formData.term) || 0 : Number(opt2.term) || 0;
+                document.getElementById('out-opt2-term-suffix').innerText = 'MONTHS';
+                document.getElementById('out-opt2-label').innerText = isLease ? 'DOWN' : 'APR';
+                opt2Row.classList.remove('hidden-view');
+            } else {
+                opt2Row.classList.add('hidden-view');
+            }
+            const paymentOptionsSection = document.getElementById('section-payment-options');
+            const mainOfferSection = document.getElementById('section-main-offer');
+            const heroCard = document.getElementById('section-hero-card');
+            if (isCash) {
+                paymentOptionsSection.classList.add('hidden-view');
+                mainOfferSection.classList.remove('grid-cols-2');
+                mainOfferSection.classList.add('grid-cols-1');
+                heroCard.classList.add('mx-auto', 'max-w-[430px]', 'w-full');
+            } else {
+                paymentOptionsSection.classList.remove('hidden-view');
+                mainOfferSection.classList.remove('grid-cols-1');
+                mainOfferSection.classList.add('grid-cols-2');
+                heroCard.classList.remove('mx-auto', 'max-w-[430px]', 'w-full');
+            }
+
+            const sectionTrade = document.getElementById('section-trade');
+            if ((Number(formData.tradeAllowance) || 0) > 0 || (Number(formData.tradePayoff) || 0) > 0 || (Number(formData.tradeEquity) || 0) !== 0) {
+                sectionTrade.classList.remove('hidden-view');
+                document.getElementById('out-tradeAllowance').innerText = formatCurrency(formData.tradeAllowance);
+                document.getElementById('out-tradePayoff').innerText = formatCurrency(-Math.abs(Number(formData.tradePayoff) || 0));
+                const tradeEl = document.getElementById('out-tradeEquity');
+                tradeEl.innerText = formatCurrency(formData.tradeEquity);
+                tradeEl.className = `text-2xl font-black ${(Number(formData.tradeEquity) || 0) < 0 ? 'text-red-600' : 'text-green-600'}`;
+                document.getElementById('row-summaryTradeEquity').classList.remove('hidden-view');
+                document.getElementById('out-summaryTradeEquity').innerText = formatCurrency(formData.tradeEquity);
+            } else {
+                sectionTrade.classList.add('hidden-view');
+                document.getElementById('row-summaryTradeEquity').classList.add('hidden-view');
+            }
+
+            document.getElementById('out-summary-title').innerText = isLease ? 'Lease Summary' : 'Deal Summary';
+            document.getElementById('out-summarySalePrice').innerText = formatCurrency(salePrice);
+            document.getElementById('out-summaryGovernmentFees').innerText = formatCurrency(formData.governmentFees);
+            const totalSales = (Number(formData.totalSalesPrice) || 0) > 0 ? Number(formData.totalSalesPrice) : salePrice;
+            document.getElementById('out-summaryTotalSalesPrice').innerText = formatCurrency(totalSales);
+            document.getElementById('out-amountFinanced').innerText = formatCurrency(formData.amountFinanced);
+            const amountFinancedRow = document.getElementById('row-amount-financed');
+            if (isLease || isCash) amountFinancedRow.classList.add('hidden-view');
+            else amountFinancedRow.classList.remove('hidden-view');
+            const dealSummarySection = document.getElementById('section-deal-summary');
+            if (isLease || isCash) dealSummarySection.classList.add('hidden-view');
+            else dealSummarySection.classList.remove('hidden-view');
+            const leaseBenefitsSection = document.getElementById('section-lease-benefits');
+            if (isLease) leaseBenefitsSection.classList.remove('hidden-view');
+            else leaseBenefitsSection.classList.add('hidden-view');
+
+            const imageUrl = String(formData.imageUrl || '').trim();
+            const imageEl = document.getElementById('out-vehicleImage');
+            const placeholderEl = document.getElementById('out-vehiclePlaceholder');
+            if (imageUrl) {
+                imageEl.referrerPolicy = 'no-referrer';
+                imageEl.crossOrigin = 'anonymous';
+                imageEl.onerror = () => {
+                    imageEl.removeAttribute('src');
+                    imageEl.classList.add('hidden-view');
+                    placeholderEl.classList.remove('hidden-view');
+                };
+                imageEl.src = imageUrl;
+                imageEl.classList.remove('hidden-view');
+                placeholderEl.classList.add('hidden-view');
+            } else {
+                imageEl.removeAttribute('src');
+                imageEl.classList.add('hidden-view');
+                placeholderEl.classList.remove('hidden-view');
+            }
+            lucide.createIcons();
+        }
+
+        document.getElementById('btn-download').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-download');
+            const iconD = document.getElementById('icon-download');
+            const iconG = document.getElementById('icon-generating');
+            const text = document.getElementById('text-download');
+            btn.classList.add('opacity-80', 'pointer-events-none');
+            iconD.classList.add('hidden-view');
+            iconG.classList.remove('hidden-view');
+            text.innerText = 'Rendering...';
+            try {
+                const target = document.getElementById('graphic-canvas');
+                const rect = target.getBoundingClientRect();
+                const captureWidth = Math.ceil(rect.width);
+                const captureHeight = Math.ceil(Math.max(rect.height, target.scrollHeight)) + 16;
+                const canvas = await html2canvas(target, {
+                    scale: 3,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    width: captureWidth,
+                    height: captureHeight,
+                    windowWidth: captureWidth,
+                    windowHeight: captureHeight,
+                    scrollX: 0,
+                    scrollY: -window.scrollY,
+                    logging: false,
+                });
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = image;
+                const safeName = (formData.customerName || 'customer').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                link.download = `${safeName}_offer_summary.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error('Export error:', err);
+                alert('Failed to export image.');
+            } finally {
+                btn.classList.remove('opacity-80', 'pointer-events-none');
+                iconD.classList.remove('hidden-view');
+                iconG.classList.add('hidden-view');
+                text.innerText = 'Download Graphic';
+            }
+        });
+
+        btnStartOver.addEventListener('click', () => {
+            setViewState('upload');
+            fileInput.value = '';
+            updateFormData({
+                customerName: '', staffName: '', staffPhone: '', staffPhotoUrl: '', staffPhotoStatus: '', vehicleName: '', retailPrice: 0, discount: 0,
+                tradeAllowance: 0, tradePayoff: 0, tradeEquity: 0,
+                amountFinanced: 0, payment: 0, apr: 0, term: 0,
+                salesPrice: 0, totalSalesPrice: 0, rebate: 0, residualPercent: 0,
+                transactionType: '', vehicleCondition: ''
+            });
+        });
+
+        loadStaffDirectory();
+        updateFormData(formData);
+    </script>
+</body>
+</html>
