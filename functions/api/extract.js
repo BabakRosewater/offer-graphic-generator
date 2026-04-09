@@ -52,8 +52,12 @@ Return ONLY strict JSON exactly in this shape:
   "procDocFees": 0,
   "cashDown": 0,
   "rebate": 0,
+  "residualPercent": 0,
+  "moneyFactor": 0,
+  "acquisitionFee": 0,
+  "netCapCost": 0,
   "paymentOptions": [
-    { "term": 0, "apr": 0, "payment": 0 }
+    { "term": 0, "apr": 0, "payment": 0, "cashDown": 0 }
   ]
 }
 
@@ -61,6 +65,7 @@ Rules:
 - payment, apr, and term must come from Selected Terms when visible.
 - Do NOT use lowest matrix payment unless Selected Terms is missing.
 - If payment is a range (e.g., $429 - $464), return the lower value.
+- For lease docs, include residualPercent, moneyFactor, acquisitionFee, netCapCost, and set paymentOptions with cashDown values when shown.
 - Use 0 for unknown numbers and empty string for unknown text.
 - No markdown, no explanation.`;
 }
