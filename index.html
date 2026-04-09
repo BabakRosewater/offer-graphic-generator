@@ -329,7 +329,7 @@
             document.getElementById('out-retailPrice').innerText = formatCurrency(formData.retailPrice);
             const transactionType = String(formData.transactionType || '').toLowerCase();
             const isLease = transactionType === 'lease';
-            const effectiveDiscount = (Number(formData.discount) || 0) + (isLease ? (Number(formData.rebate) || 0) : 0);
+            const effectiveDiscount = (Number(formData.discount) || 0) + (Number(formData.rebate) || 0);
             const salePrice = (Number(formData.salesPrice) || 0) > 0 ? Number(formData.salesPrice) : (Number(formData.retailPrice) || 0) - effectiveDiscount;
             document.getElementById('out-salePrice').innerText = formatCurrency(salePrice);
 
