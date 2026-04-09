@@ -546,14 +546,19 @@
             text.innerText = 'Rendering...';
             try {
                 const target = document.getElementById('graphic-canvas');
+                const rect = target.getBoundingClientRect();
+                const captureWidth = Math.ceil(rect.width);
+                const captureHeight = Math.ceil(Math.max(rect.height, target.scrollHeight)) + 16;
                 const canvas = await html2canvas(target, {
-                    scale: 2,
+                    scale: 3,
                     useCORS: true,
                     backgroundColor: '#ffffff',
-                    width: target.offsetWidth,
-                    height: target.offsetHeight,
-                    windowWidth: target.scrollWidth,
-                    windowHeight: target.scrollHeight,
+                    width: captureWidth,
+                    height: captureHeight,
+                    windowWidth: captureWidth,
+                    windowHeight: captureHeight,
+                    scrollX: 0,
+                    scrollY: -window.scrollY,
                     logging: false,
                 });
                 const image = canvas.toDataURL('image/png');
