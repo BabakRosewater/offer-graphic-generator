@@ -47,6 +47,36 @@ After Gemini extraction succeeds, `/api/extract` can call:
 
 This enrichment is non-blocking. If inventory lookup fails/times out/no-match, the endpoint still returns Gemini-normalized data.
 
+## Derived deal-type schema (v1)
+
+Normalized output now includes an automatic derived scenario layer:
+
+- `sourceDocType`, `transactionType`, `vehicleCondition`
+- `tradePresent`, `tradeStatus`, `cashDownStatus`
+- `rebatePresent`, `gapPresent`, `serviceContractPresent`
+- `selectedPaymentLow`, `selectedPaymentHigh`
+- `residualPercent`, `moneyFactor`, `leaseMileagePlan`
+- `governmentFees`, `acquisitionFee`, `netCapCost`
+- `programBucket`, `scenarioKey`
+
+Current starter categories supported:
+
+- finance purchase
+- lease
+- no trade
+- positive equity trade
+- rebate
+- no rebate
+- zero down
+
+Planned future schema expansion:
+
+- negative equity refinements
+- actual cash down variants
+- used / CPO distinctions
+- more gap/service contract positive examples
+- cash purchase variants
+
 ## API response shape
 
 ### Success
