@@ -28,6 +28,7 @@ function aiPrompt() {
 Return ONLY strict JSON exactly in this shape:
 {
   "customerName": "",
+  "staffName": "",
   "vehicleName": "",
   "retailPrice": 0,
   "discount": 0,
