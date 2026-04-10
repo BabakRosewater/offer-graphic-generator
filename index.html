@@ -411,12 +411,13 @@
                 ? 'Your Estimated Lease Payment'
                 : (isCash ? 'Your Cash Purchase Summary' : 'Your Estimated Payment');
             paymentFrequency.innerText = isLease
-                ? `Per Month • ${Number(formData.term) || 0} Months`
+                ? 'Per Month'
                 : (isCash ? 'Total Cash Due (Incl. Fees)' : 'Per Month');
             if (isLease) {
                 paymentMainRow.classList.add('justify-center', 'gap-0');
                 paymentMainRow.classList.remove('gap-5', 'justify-between', 'gap-3', 'gap-2');
                 paymentMainBlock.classList.add('text-center');
+                paymentFrequency.innerText = 'Per Month';
                 paymentAmountEl.style.fontSize = '80px';
                 aprWrapEl.classList.remove('text-3xl');
                 aprWrapEl.classList.add('text-4xl');
