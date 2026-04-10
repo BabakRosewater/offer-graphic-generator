@@ -32,9 +32,15 @@
                     <p class="text-slate-500">Transform internal quotes into mobile-friendly summaries.</p>
                 </div>
             </div>
-            <button id="btn-start-over" class="hidden-view text-sm font-medium text-slate-500 hover:text-blue-600 flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 transition-colors">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Start Over
-            </button>
+            <div class="flex items-center gap-3">
+                <div class="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 border border-slate-200">
+                    <button type="button" id="mode-offer" class="mode-btn text-xs font-bold px-3 py-2 rounded-lg text-slate-600">Offer Graphic</button>
+                    <button type="button" id="mode-message" class="mode-btn text-xs font-bold px-3 py-2 rounded-lg text-slate-600">Message Graphic</button>
+                </div>
+                <button id="btn-start-over" class="hidden-view text-sm font-medium text-slate-500 hover:text-blue-600 flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 transition-colors">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Start Over
+                </button>
+            </div>
         </header>
 
         <div id="view-upload" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center min-h-[500px]">
@@ -51,6 +57,7 @@
                 </div>
                 <button class="bg-blue-900 text-white px-6 py-3 rounded-lg font-medium shadow-sm hover:bg-blue-800 transition-colors pointer-events-none">Browse Files</button>
                 <input type="file" id="file-input" accept="application/pdf, image/*" class="hidden" />
+                <button id="btn-create-message" type="button" class="mt-5 text-sm font-semibold text-blue-900 hover:text-blue-700">Or create a Message Graphic manually</button>
             </div>
         </div>
 
@@ -65,7 +72,7 @@
         <div id="view-review" class="hidden-view flex flex-col lg:flex-row gap-8 items-start">
             <div class="w-full lg:w-[350px] flex-shrink-0 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                 <div class="p-4 border-b border-slate-100 bg-blue-50/50 flex justify-between items-center">
-                    <h2 class="font-semibold text-blue-900 flex items-center gap-2"><i data-lucide="file-image" class="w-4 h-4"></i> Review Extracted Data</h2>
+                    <h2 id="review-panel-title" class="font-semibold text-blue-900 flex items-center gap-2"><i data-lucide="file-image" class="w-4 h-4"></i> Review Extracted Data</h2>
                 </div>
                 <div class="p-6 space-y-4 flex-1 overflow-y-auto max-h-[700px] custom-scrollbar">
                     <form id="data-form" class="grid grid-cols-2 gap-4">
@@ -107,6 +114,31 @@
                         <div id="field-term"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Term (Mo)</label><div class="relative"><i data-lucide="calendar" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-term" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
                         <div id="field-residual" class="col-span-2 hidden-view"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Residual %</label><div class="relative"><i data-lucide="percent" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" step="0.01" id="in-residualPercent" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
                     </form>
+                    <form id="message-form" class="grid grid-cols-2 gap-4 hidden-view">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Message Type</label>
+                            <select id="msg-graphicType" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none bg-white">
+                                <option value="re_engagement">Re-engagement</option>
+                                <option value="inventory_redirect">Inventory Redirect</option>
+                                <option value="status_update">Status Update</option>
+                                <option value="numbers_clarity">Numbers Clarity</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Customer First Name</label><input type="text" id="msg-customerFirstName" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Headline</label><input type="text" id="msg-headline" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Subheadline</label><input type="text" id="msg-subheadline" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Vehicle Title</label><input type="text" id="msg-vehicleTitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Vehicle Subtitle</label><input type="text" id="msg-vehicleSubtitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Message Body</label><textarea id="msg-messageBody" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"></textarea></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">CTA 1</label><input type="text" id="msg-cta1" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">CTA 2</label><input type="text" id="msg-cta2" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">CTA 3 (Optional)</label><input type="text" id="msg-cta3" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Name</label><input type="text" id="msg-contactName" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Title</label><input type="text" id="msg-contactTitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Phone</label><input type="text" id="msg-contactPhone" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Photo URL</label><input type="text" id="msg-contactPhotoUrl" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Theme Variant</label><select id="msg-themeVariant" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none bg-white"><option value="classic">Classic</option><option value="night">Night</option><option value="accent">Accent</option></select></div>
+                    </form>
                 </div>
                 <div class="p-4 bg-slate-50 border-t border-slate-100">
                     <button id="btn-download" class="w-full py-4 px-4 bg-blue-900 hover:bg-blue-800 text-white rounded-xl font-medium text-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-900/20"><i data-lucide="download" id="icon-download" class="w-6 h-6"></i><i data-lucide="loader-2" id="icon-generating" class="w-6 h-6 spinner hidden-view"></i><span id="text-download">Download Graphic</span></button>
@@ -133,6 +165,39 @@
                     <div class="mx-8 mt-6 grid grid-cols-2 gap-6 pb-6 border-b border-slate-200"><div id="section-trade" class="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl flex flex-col"><div class="p-4 border-b border-[#bbf7d0] flex items-center gap-2 text-green-800 font-black text-sm uppercase tracking-widest"><i data-lucide="refresh-cw" class="w-5 h-5"></i> Trade-In Summary</div><div class="p-5 space-y-4 flex-1 text-[15px]"><div class="flex justify-between font-bold text-slate-700"><span>Trade Allowance</span><span id="out-tradeAllowance" class="text-green-700">$0</span></div><div class="flex justify-between font-bold text-slate-700"><span>Trade Payoff</span><span id="out-tradePayoff" class="text-red-600">-$0</span></div><div class="pt-4 mt-2 border-t border-green-200/60 flex justify-between items-end"><div><div class="font-black text-green-800 uppercase tracking-wide">Trade Equity</div><div class="text-xs text-green-700/80 font-medium leading-tight mt-1">Rolled into your new loan</div></div><span id="out-tradeEquity" class="text-2xl font-black text-red-600">$0</span></div></div></div><div id="section-deal-summary" class="bg-blue-50/50 border border-blue-100 rounded-2xl flex flex-col overflow-hidden"><div class="p-4 border-b border-blue-100 flex items-center gap-2 text-[#1e4b82] font-black text-sm uppercase tracking-widest"><i data-lucide="file-text" class="w-5 h-5"></i> <span id="out-summary-title">Deal Summary</span></div><div class="p-5 space-y-3 flex-1 text-[13px] font-bold text-slate-600"><div class="flex justify-between"><span>Sale Price</span><span id="out-summarySalePrice" class="text-slate-800">$0</span></div><div class="flex justify-between"><span>Government Fees</span><span id="out-summaryGovernmentFees" class="text-slate-800">$0</span></div><div class="flex justify-between"><span>Total Sales Price</span><span id="out-summaryTotalSalesPrice" class="text-slate-800">$0</span></div><div id="row-summaryRebate" class="flex justify-between"><span>Rebate</span><span id="out-summaryRebate" class="text-slate-800">$0</span></div><div id="row-summaryCashDown" class="flex justify-between"><span>Cash Down</span><span id="out-summaryCashDown" class="text-slate-800">$0</span></div><div id="row-summaryTradeEquity" class="flex justify-between"><span>Trade Equity (Rolled In)</span><span id="out-summaryTradeEquity" class="text-slate-800">$0</span></div></div><div id="row-amount-financed" class="bg-[#0f2846] px-5 py-4 flex justify-between items-center text-white"><span id="out-amount-financed-label" class="font-bold uppercase tracking-widest text-xs">Amount Financed</span><span id="out-amountFinanced" class="text-2xl font-black">$0</span></div></div></div>
                     <div class="mx-8 py-6 flex justify-between items-center"><div class="flex items-center gap-3 text-slate-500 w-2/3"><i data-lucide="shield-check" class="w-10 h-10 text-blue-800 opacity-80 flex-shrink-0"></i><p class="text-[11px] leading-tight font-medium">Payments are estimates and subject to approved credit and program eligibility. Excludes tax, title, and license fees.</p></div><div class="text-right"><div class="text-xl font-serif italic text-[#1e4b82] font-medium">Thank you!</div><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">We appreciate your business.</div></div></div>
                 </div>
+                <div id="message-canvas" class="hidden-view bg-white w-full max-w-[700px] relative font-sans shadow-2xl overflow-hidden rounded-md border border-slate-100 p-8">
+                    <div id="msg-theme-shell" class="rounded-2xl p-6 bg-gradient-to-br from-[#1e4b82] to-[#0f2846] text-white min-h-[760px] flex flex-col">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <div class="text-xs tracking-[0.2em] uppercase text-white/80">Clark Hyundai</div>
+                                <div id="msg-type-chip" class="mt-2 inline-block px-3 py-1 rounded-full bg-white/20 text-[11px] font-bold uppercase tracking-wider">Re-Engagement</div>
+                            </div>
+                            <div class="text-right text-xs uppercase tracking-widest text-white/70">Personalized Message</div>
+                        </div>
+                        <div class="bg-white text-[#0f2846] rounded-2xl p-6 shadow-sm flex-1 flex flex-col">
+                            <p id="msg-out-greeting" class="text-sm font-semibold text-slate-500 mb-2">Hi there,</p>
+                            <h2 id="msg-out-headline" class="text-4xl font-black leading-tight mb-3">Quick update on your vehicle options</h2>
+                            <p id="msg-out-subheadline" class="text-lg font-semibold text-[#1e4b82] mb-4">I pulled a few paths that could fit your goals.</p>
+                            <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 mb-4">
+                                <div id="msg-out-vehicleTitle" class="text-2xl font-black text-[#0f2846]">2026 Hyundai Tucson Hybrid</div>
+                                <div id="msg-out-vehicleSubtitle" class="text-sm text-slate-500 mt-1">Limited • Available now</div>
+                            </div>
+                            <p id="msg-out-body" class="text-[15px] leading-relaxed text-slate-700 mb-5">I can walk you through numbers, inventory alternatives, or next steps whenever you’re ready.</p>
+                            <div id="msg-out-cta-wrap" class="grid grid-cols-1 gap-2 mb-6"></div>
+                            <div class="mt-auto flex items-center gap-3 border-t border-slate-200 pt-4">
+                                <div class="w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-200">
+                                    <img id="msg-out-contactPhoto" class="w-full h-full object-cover hidden-view" alt="Contact Photo"/>
+                                    <div id="msg-out-contactFallback" class="w-full h-full flex items-center justify-center text-slate-400"><i data-lucide="user-circle-2" class="w-7 h-7"></i></div>
+                                </div>
+                                <div>
+                                    <div id="msg-out-contactName" class="font-bold text-[#0f2846]">Your Sales Team</div>
+                                    <div id="msg-out-contactTitle" class="text-xs text-slate-500">Sales Advisor</div>
+                                    <div id="msg-out-contactPhone" class="text-sm font-semibold text-[#1e4b82]">(406) 740-6635</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -148,6 +213,23 @@
             vehicleColor: '', vehicleMileage: 0, inventoryStatus: '',
             governmentFees: 0, procDocFees: 0, totalTaxes: 0, cashDown: 0, accessories: 0, serviceContract: 0, gap: 0, paymentOptions: [], transactionType: '', residualPercent: 0, rebate: 0, vehicleCondition: ''
         };
+        let graphicMode = 'offer';
+        const MESSAGE_DEFAULTS = {
+            graphicType: 're_engagement',
+            headline: 'Quick update on your options',
+            subheadline: 'I can help you choose the right next step.',
+            vehicleTitle: '2026 Hyundai Tucson Hybrid',
+            vehicleSubtitle: 'Limited • Available now',
+            messageBody: 'I pulled a few clean options for you. Reply with what matters most and I will tailor the numbers.',
+            ctaOptions: ['Review numbers', 'See similar inventory'],
+            contactName: 'Sales Team',
+            contactTitle: 'Sales Advisor',
+            contactPhone: '(406) 740-6635',
+            contactPhotoUrl: '',
+            themeVariant: 'classic',
+            customerFirstName: '',
+        };
+        let messageData = { ...MESSAGE_DEFAULTS };
 
         const viewUpload = document.getElementById('view-upload');
         const viewExtracting = document.getElementById('view-extracting');
@@ -155,10 +237,59 @@
         const btnStartOver = document.getElementById('btn-start-over');
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
+        const offerModeBtn = document.getElementById('mode-offer');
+        const messageModeBtn = document.getElementById('mode-message');
+        const reviewPanelTitle = document.getElementById('review-panel-title');
+        const offerFormEl = document.getElementById('data-form');
+        const messageFormEl = document.getElementById('message-form');
+        const offerCanvas = document.getElementById('graphic-canvas');
+        const messageCanvas = document.getElementById('message-canvas');
 
         const inputs = ['customerName', 'staffName', 'vehicleName', 'retailPrice', 'discount', 'rebate', 'governmentFees', 'procDocFees', 'totalTaxes', 'cashDown', 'accessories', 'serviceContract', 'gap', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent'];
         const numberFields = ['retailPrice', 'discount', 'rebate', 'governmentFees', 'procDocFees', 'totalTaxes', 'cashDown', 'accessories', 'serviceContract', 'gap', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent', 'vehicleMileage'];
         let staffDirectory = [];
+
+        function normalizeMessageData(raw = {}) {
+            const ctaOptions = [raw.cta1, raw.cta2, raw.cta3]
+                .map((x) => String(x || '').trim())
+                .filter(Boolean)
+                .slice(0, 3);
+            return {
+                graphicType: String(raw.graphicType || MESSAGE_DEFAULTS.graphicType),
+                headline: String(raw.headline || MESSAGE_DEFAULTS.headline),
+                subheadline: String(raw.subheadline || MESSAGE_DEFAULTS.subheadline),
+                vehicleTitle: String(raw.vehicleTitle || MESSAGE_DEFAULTS.vehicleTitle),
+                vehicleSubtitle: String(raw.vehicleSubtitle || MESSAGE_DEFAULTS.vehicleSubtitle),
+                messageBody: String(raw.messageBody || MESSAGE_DEFAULTS.messageBody),
+                ctaOptions: ctaOptions.length ? ctaOptions : [...MESSAGE_DEFAULTS.ctaOptions],
+                contactName: String(raw.contactName || MESSAGE_DEFAULTS.contactName),
+                contactTitle: String(raw.contactTitle || MESSAGE_DEFAULTS.contactTitle),
+                contactPhone: String(raw.contactPhone || MESSAGE_DEFAULTS.contactPhone),
+                contactPhotoUrl: String(raw.contactPhotoUrl || ''),
+                themeVariant: String(raw.themeVariant || MESSAGE_DEFAULTS.themeVariant),
+                customerFirstName: String(raw.customerFirstName || ''),
+            };
+        }
+
+        function setGraphicMode(mode) {
+            graphicMode = mode === 'message' ? 'message' : 'offer';
+            const isMessage = graphicMode === 'message';
+            offerModeBtn.classList.toggle('bg-white', !isMessage);
+            offerModeBtn.classList.toggle('text-blue-900', !isMessage);
+            messageModeBtn.classList.toggle('bg-white', isMessage);
+            messageModeBtn.classList.toggle('text-blue-900', isMessage);
+            offerFormEl.classList.toggle('hidden-view', isMessage);
+            messageFormEl.classList.toggle('hidden-view', !isMessage);
+            offerCanvas.classList.toggle('hidden-view', isMessage);
+            messageCanvas.classList.toggle('hidden-view', !isMessage);
+            reviewPanelTitle.innerHTML = isMessage
+                ? '<i data-lucide="message-square" class="w-4 h-4"></i> Build Customer Message'
+                : '<i data-lucide="file-image" class="w-4 h-4"></i> Review Extracted Data';
+            if (isMessage && viewReview.classList.contains('hidden-view')) setViewState('review');
+            if (isMessage) renderMessageGraphic();
+            else renderGraphic();
+            lucide.createIcons();
+        }
 
         function syncStaffPhotoFromSelection() {
             const selected = staffDirectory.find((s) => s.name === formData.staffName);
@@ -319,6 +450,77 @@
             renderGraphic();
         }
 
+        function syncMessageForm() {
+            const map = {
+                'msg-graphicType': messageData.graphicType,
+                'msg-customerFirstName': messageData.customerFirstName,
+                'msg-headline': messageData.headline,
+                'msg-subheadline': messageData.subheadline,
+                'msg-vehicleTitle': messageData.vehicleTitle,
+                'msg-vehicleSubtitle': messageData.vehicleSubtitle,
+                'msg-messageBody': messageData.messageBody,
+                'msg-cta1': messageData.ctaOptions[0] || '',
+                'msg-cta2': messageData.ctaOptions[1] || '',
+                'msg-cta3': messageData.ctaOptions[2] || '',
+                'msg-contactName': messageData.contactName,
+                'msg-contactTitle': messageData.contactTitle,
+                'msg-contactPhone': messageData.contactPhone,
+                'msg-contactPhotoUrl': messageData.contactPhotoUrl,
+                'msg-themeVariant': messageData.themeVariant,
+            };
+            Object.entries(map).forEach(([id, value]) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            });
+        }
+
+        function renderMessageGraphic() {
+            if (graphicMode !== 'message') return;
+            const typeLabelMap = {
+                re_engagement: 'Re-Engagement',
+                inventory_redirect: 'Inventory Redirect',
+                status_update: 'Status Update',
+                numbers_clarity: 'Numbers Clarity',
+            };
+            const shell = document.getElementById('msg-theme-shell');
+            shell.className = 'rounded-2xl p-6 text-white min-h-[760px] flex flex-col';
+            if (messageData.themeVariant === 'night') shell.classList.add('bg-gradient-to-br', 'from-slate-900', 'to-[#111827]');
+            else if (messageData.themeVariant === 'accent') shell.classList.add('bg-gradient-to-br', 'from-[#1e4b82]', 'to-[#2563eb]');
+            else shell.classList.add('bg-gradient-to-br', 'from-[#1e4b82]', 'to-[#0f2846]');
+
+            document.getElementById('msg-type-chip').innerText = typeLabelMap[messageData.graphicType] || 'Message';
+            document.getElementById('msg-out-greeting').innerText = messageData.customerFirstName ? `Hi ${messageData.customerFirstName},` : 'Hi there,';
+            document.getElementById('msg-out-headline').innerText = messageData.headline;
+            document.getElementById('msg-out-subheadline').innerText = messageData.subheadline;
+            document.getElementById('msg-out-vehicleTitle').innerText = messageData.vehicleTitle;
+            document.getElementById('msg-out-vehicleSubtitle').innerText = messageData.vehicleSubtitle;
+            document.getElementById('msg-out-body').innerText = messageData.messageBody;
+            document.getElementById('msg-out-contactName').innerText = messageData.contactName;
+            document.getElementById('msg-out-contactTitle').innerText = messageData.contactTitle;
+            document.getElementById('msg-out-contactPhone').innerText = messageData.contactPhone;
+
+            const ctaWrap = document.getElementById('msg-out-cta-wrap');
+            ctaWrap.innerHTML = '';
+            messageData.ctaOptions.slice(0, 3).forEach((cta) => {
+                const row = document.createElement('div');
+                row.className = 'px-4 py-2 rounded-lg border border-slate-200 bg-white text-[#0f2846] font-semibold text-sm';
+                row.innerText = cta;
+                ctaWrap.appendChild(row);
+            });
+            const photoEl = document.getElementById('msg-out-contactPhoto');
+            const fallbackEl = document.getElementById('msg-out-contactFallback');
+            if (messageData.contactPhotoUrl) {
+                photoEl.src = messageData.contactPhotoUrl;
+                photoEl.classList.remove('hidden-view');
+                fallbackEl.classList.add('hidden-view');
+            } else {
+                photoEl.removeAttribute('src');
+                photoEl.classList.add('hidden-view');
+                fallbackEl.classList.remove('hidden-view');
+            }
+            lucide.createIcons();
+        }
+
         document.getElementById('data-form').addEventListener('input', (e) => {
             const key = e.target.id.replace('in-', '');
             let value = e.target.value;
@@ -326,6 +528,35 @@
             formData[key] = value;
             if (key === 'staffName') syncStaffPhotoFromSelection();
             renderGraphic();
+        });
+
+        document.getElementById('message-form').addEventListener('input', () => {
+            messageData = normalizeMessageData({
+                graphicType: document.getElementById('msg-graphicType').value,
+                customerFirstName: document.getElementById('msg-customerFirstName').value,
+                headline: document.getElementById('msg-headline').value,
+                subheadline: document.getElementById('msg-subheadline').value,
+                vehicleTitle: document.getElementById('msg-vehicleTitle').value,
+                vehicleSubtitle: document.getElementById('msg-vehicleSubtitle').value,
+                messageBody: document.getElementById('msg-messageBody').value,
+                cta1: document.getElementById('msg-cta1').value,
+                cta2: document.getElementById('msg-cta2').value,
+                cta3: document.getElementById('msg-cta3').value,
+                contactName: document.getElementById('msg-contactName').value,
+                contactTitle: document.getElementById('msg-contactTitle').value,
+                contactPhone: document.getElementById('msg-contactPhone').value,
+                contactPhotoUrl: document.getElementById('msg-contactPhotoUrl').value,
+                themeVariant: document.getElementById('msg-themeVariant').value,
+            });
+            renderMessageGraphic();
+        });
+
+        offerModeBtn.addEventListener('click', () => setGraphicMode('offer'));
+        messageModeBtn.addEventListener('click', () => setGraphicMode('message'));
+        document.getElementById('btn-create-message').addEventListener('click', () => {
+            messageData = normalizeMessageData(messageData);
+            syncMessageForm();
+            setGraphicMode('message');
         });
 
         document.querySelectorAll('.deal-type-btn').forEach((btn) => {
@@ -644,7 +875,7 @@
             iconG.classList.remove('hidden-view');
             text.innerText = 'Rendering...';
             try {
-                const target = document.getElementById('graphic-canvas');
+                const target = graphicMode === 'message' ? document.getElementById('message-canvas') : document.getElementById('graphic-canvas');
                 const rect = target.getBoundingClientRect();
                 const captureWidth = Math.ceil(rect.width);
                 const captureHeight = Math.ceil(Math.max(rect.height, target.scrollHeight)) + 16;
@@ -663,8 +894,11 @@
                 const image = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.href = image;
-                const safeName = (formData.customerName || 'customer').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                link.download = `${safeName}_offer_summary.png`;
+                const safeName = (graphicMode === 'message'
+                    ? (messageData.customerFirstName || messageData.contactName || 'customer')
+                    : (formData.customerName || 'customer')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const suffix = graphicMode === 'message' ? 'message_graphic' : 'offer_summary';
+                link.download = `${safeName}_${suffix}.png`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -680,6 +914,13 @@
         });
 
         btnStartOver.addEventListener('click', () => {
+            if (graphicMode === 'message') {
+                messageData = { ...MESSAGE_DEFAULTS };
+                syncMessageForm();
+                setViewState('review');
+                renderMessageGraphic();
+                return;
+            }
             setViewState('upload');
             fileInput.value = '';
             updateFormData({
@@ -687,12 +928,16 @@
                 tradeAllowance: 0, tradePayoff: 0, tradeEquity: 0,
                 amountFinanced: 0, payment: 0, apr: 0, term: 0,
                 salesPrice: 0, totalSalesPrice: 0, rebate: 0, residualPercent: 0,
+                governmentFees: 0, procDocFees: 0, totalTaxes: 0, cashDown: 0, accessories: 0, serviceContract: 0, gap: 0,
                 transactionType: '', vehicleCondition: ''
             });
         });
 
         loadStaffDirectory();
         updateFormData(formData);
+        messageData = normalizeMessageData(MESSAGE_DEFAULTS);
+        syncMessageForm();
+        setGraphicMode('offer');
     </script>
 </body>
 </html>
