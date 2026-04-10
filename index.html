@@ -374,7 +374,7 @@
             const transactionType = String(formData.transactionType || '').toLowerCase();
             const isLease = transactionType === 'lease';
             const isCash = transactionType === 'cash_purchase';
-            const effectiveDiscount = Number(formData.discount) || 0;
+            const effectiveDiscount = (Number(formData.discount) || 0) + (Number(formData.rebate) || 0);
             const salePrice = (Number(formData.salesPrice) || 0) > 0 ? Number(formData.salesPrice) : (Number(formData.retailPrice) || 0) - effectiveDiscount;
             document.getElementById('out-salePrice').innerText = formatCurrency(salePrice);
 
