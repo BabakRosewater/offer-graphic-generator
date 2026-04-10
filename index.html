@@ -411,7 +411,7 @@
                 ? 'Your Estimated Lease Payment'
                 : (isCash ? 'Your Cash Purchase Summary' : 'Your Estimated Payment');
             paymentFrequency.innerText = isLease
-                ? 'Per Month'
+                ? `Per Month • ${Number(formData.term) || 0} Months`
                 : (isCash ? 'Total Cash Due (Incl. Fees)' : 'Per Month');
             if (isLease) {
                 paymentMainRow.classList.add('justify-center', 'gap-0');
