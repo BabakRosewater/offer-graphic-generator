@@ -176,13 +176,10 @@
                             </div>
                             <div class="text-right text-xs uppercase tracking-widest text-white/70">Personalized Message</div>
                         </div>
-                        <div class="bg-white text-[#0f2846] rounded-2xl p-0 shadow-sm flex-1 flex flex-col overflow-hidden">
-                            <div id="msg-out-heroStrip" class="px-6 py-5 bg-[#1e4b82] text-white border-b border-slate-200">
-                                <h2 id="msg-out-headline" class="text-4xl font-black leading-tight mb-2">Quick update on your vehicle options</h2>
-                                <p id="msg-out-subheadline" class="text-lg font-semibold text-white/90">I pulled a few paths that could fit your goals.</p>
-                            </div>
-                            <div class="p-6 flex-1 flex flex-col">
+                        <div class="bg-white text-[#0f2846] rounded-2xl p-6 shadow-sm flex-1 flex flex-col">
                             <p id="msg-out-greeting" class="text-sm font-semibold text-slate-500 mb-2">Hi there,</p>
+                            <h2 id="msg-out-headline" class="text-4xl font-black leading-tight mb-3">Quick update on your vehicle options</h2>
+                            <p id="msg-out-subheadline" class="text-lg font-semibold text-[#1e4b82] mb-4">I pulled a few paths that could fit your goals.</p>
                             <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 mb-4">
                                 <div id="msg-out-vehicleTitle" class="text-2xl font-black text-[#0f2846]">2026 Hyundai Tucson Hybrid</div>
                                 <div id="msg-out-vehicleSubtitle" class="text-sm text-slate-500 mt-1">Limited • Available now</div>
@@ -199,7 +196,6 @@
                                     <div id="msg-out-contactTitle" class="text-xs text-slate-500">Sales Advisor</div>
                                     <div id="msg-out-contactPhone" class="text-sm font-semibold text-[#1e4b82]">(406) 740-6635</div>
                                 </div>
-                            </div>
                             </div>
                         </div>
                     </div>
@@ -523,10 +519,10 @@
                 numbers_clarity: 'Numbers Clarity',
             };
             const typeAccentMap = {
-                re_engagement: { chip: 'bg-blue-300/30 text-blue-50', hero: '#6693d4', badgeColor: '#6693d4' },
-                inventory_redirect: { chip: 'bg-amber-500/25 text-amber-50', hero: '#d97b00', badgeColor: '#d97b00' },
-                status_update: { chip: 'bg-emerald-500/25 text-emerald-50', hero: '#0f9d73', badgeColor: '#0f9d73' },
-                numbers_clarity: { chip: 'bg-slate-400/25 text-slate-100', hero: '#133d6e', badgeColor: '#133d6e' },
+                re_engagement: 'bg-emerald-500/20 text-emerald-50',
+                inventory_redirect: 'bg-amber-500/25 text-amber-50',
+                status_update: 'bg-sky-500/25 text-sky-50',
+                numbers_clarity: 'bg-violet-500/25 text-violet-50',
             };
             const shell = document.getElementById('msg-theme-shell');
             shell.className = 'rounded-2xl p-6 text-white min-h-[760px] flex flex-col';
@@ -535,15 +531,12 @@
             else shell.classList.add('bg-gradient-to-br', 'from-[#1e4b82]', 'to-[#0f2846]');
 
             const typeChip = document.getElementById('msg-type-chip');
-            const accent = typeAccentMap[messageData.graphicType] || typeAccentMap.re_engagement;
-            typeChip.className = `mt-2 inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${accent.chip}`;
+            typeChip.className = `mt-2 inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${typeAccentMap[messageData.graphicType] || 'bg-white/20 text-white'}`;
             typeChip.innerText = typeLabelMap[messageData.graphicType] || 'Message';
             document.getElementById('msg-out-reasonBadge').innerText = messageData.reasonBadge || 'Message update';
             document.getElementById('msg-out-greeting').innerText = messageData.customerFirstName ? `${messageData.customerFirstName},` : 'Hi there,';
             document.getElementById('msg-out-headline').innerText = messageData.headline;
             document.getElementById('msg-out-subheadline').innerText = messageData.subheadline;
-            const heroStrip = document.getElementById('msg-out-heroStrip');
-            heroStrip.style.backgroundColor = accent.hero;
             document.getElementById('msg-out-vehicleTitle').innerText = messageData.vehicleTitle;
             document.getElementById('msg-out-vehicleSubtitle').innerText = messageData.vehicleSubtitle;
             document.getElementById('msg-out-body').innerText = messageData.messageBody;
@@ -553,19 +546,10 @@
 
             const ctaWrap = document.getElementById('msg-out-cta-wrap');
             ctaWrap.innerHTML = '';
-            const alpha = ['A', 'B', 'C'];
-            messageData.ctaOptions.slice(0, 3).forEach((cta, idx) => {
+            messageData.ctaOptions.slice(0, 3).forEach((cta) => {
                 const row = document.createElement('div');
-                row.className = 'px-3 py-2 rounded-lg border border-slate-200 bg-white text-[#0f2846] font-semibold text-sm flex items-center gap-3';
-                const pill = document.createElement('span');
-                pill.className = 'w-8 h-8 rounded-lg inline-flex items-center justify-center text-xs font-black';
-                pill.style.backgroundColor = accent.badgeColor || '#133d6e';
-                pill.style.color = '#fff';
-                pill.innerText = alpha[idx] || '•';
-                const label = document.createElement('span');
-                label.innerText = cta;
-                row.appendChild(pill);
-                row.appendChild(label);
+                row.className = 'px-4 py-2 rounded-lg border border-slate-200 bg-white text-[#0f2846] font-semibold text-sm';
+                row.innerText = cta;
                 ctaWrap.appendChild(row);
             });
             const photoEl = document.getElementById('msg-out-contactPhoto');
