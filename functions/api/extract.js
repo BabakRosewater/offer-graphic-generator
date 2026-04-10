@@ -48,6 +48,7 @@ Return ONLY strict JSON exactly in this shape:
   "vehicleColor": "",
   "vehicleMileage": 0,
   "governmentFees": 0,
+  "totalTaxes": 0,
   "accessories": 0,
   "serviceContract": 0,
   "gap": 0,

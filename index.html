@@ -91,6 +91,13 @@
                         <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Retail Price</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-retailPrice" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
                         <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Discount</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-discount" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
                         <div id="field-rebate" class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Rebate</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-rebate" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Government Fees</label><div class="relative"><i data-lucide="receipt" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-governmentFees" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Proc/Doc Fees</label><div class="relative"><i data-lucide="receipt-text" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-procDocFees" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Total Taxes</label><div class="relative"><i data-lucide="landmark" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-totalTaxes" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Cash Down</label><div class="relative"><i data-lucide="wallet" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-cashDown" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Accessories</label><div class="relative"><i data-lucide="wrench" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-accessories" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Service Contract</label><div class="relative"><i data-lucide="shield-check" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-serviceContract" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">GAP</label><div class="relative"><i data-lucide="circle-dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-gap" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
                         <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Allowance</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradeAllowance" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Payoff</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradePayoff" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Trade Equity (+/-)</label><div class="relative"><i data-lucide="dollar-sign" class="absolute left-3 top-2.5 text-slate-400 w-4 h-4"></i><input type="number" id="in-tradeEquity" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" /></div></div>
@@ -139,7 +146,7 @@
             amountFinanced: 0, payment: 0, apr: 0, term: 0,
             salesPrice: 0, totalSalesPrice: 0, imageUrl: '',
             vehicleColor: '', vehicleMileage: 0, inventoryStatus: '',
-            governmentFees: 0, procDocFees: 0, cashDown: 0, paymentOptions: [], transactionType: '', residualPercent: 0, rebate: 0, vehicleCondition: ''
+            governmentFees: 0, procDocFees: 0, totalTaxes: 0, cashDown: 0, accessories: 0, serviceContract: 0, gap: 0, paymentOptions: [], transactionType: '', residualPercent: 0, rebate: 0, vehicleCondition: ''
         };
 
         const viewUpload = document.getElementById('view-upload');
@@ -149,8 +156,8 @@
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
 
-        const inputs = ['customerName', 'staffName', 'vehicleName', 'retailPrice', 'discount', 'rebate', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent', 'salesPrice', 'totalSalesPrice'];
-        const numberFields = ['retailPrice', 'discount', 'rebate', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent', 'salesPrice', 'totalSalesPrice', 'vehicleMileage', 'governmentFees'];
+        const inputs = ['customerName', 'staffName', 'vehicleName', 'retailPrice', 'discount', 'rebate', 'governmentFees', 'procDocFees', 'totalTaxes', 'cashDown', 'accessories', 'serviceContract', 'gap', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent'];
+        const numberFields = ['retailPrice', 'discount', 'rebate', 'governmentFees', 'procDocFees', 'totalTaxes', 'cashDown', 'accessories', 'serviceContract', 'gap', 'tradeAllowance', 'tradePayoff', 'tradeEquity', 'amountFinanced', 'payment', 'apr', 'term', 'residualPercent', 'vehicleMileage'];
         let staffDirectory = [];
 
         function syncStaffPhotoFromSelection() {
@@ -377,7 +384,10 @@
             const discountValue = Number(formData.discount) || 0;
             const rebateValue = Number(formData.rebate) || 0;
             const totalReduction = discountValue + rebateValue;
-            const salePrice = (Number(formData.salesPrice) || 0) > 0 ? Number(formData.salesPrice) : (Number(formData.retailPrice) || 0) - totalReduction;
+            const computedFinanceSalePrice = (Number(formData.retailPrice) || 0) - totalReduction;
+            const salePrice = (!isLease && !isCash)
+                ? computedFinanceSalePrice
+                : ((Number(formData.salesPrice) || 0) > 0 ? Number(formData.salesPrice) : (Number(formData.retailPrice) || 0) - totalReduction);
             document.getElementById('out-salePrice').innerText = formatCurrency(salePrice);
 
             const colDiscount = document.getElementById('col-discount');
@@ -557,14 +567,16 @@
             document.getElementById('out-summary-title').innerText = isLease ? 'Lease Summary' : 'Deal Summary';
             document.getElementById('out-summarySalePrice').innerText = formatCurrency(salePrice);
             document.getElementById('out-summaryGovernmentFees').innerText = formatCurrency(formData.governmentFees);
-            const totalSales = (Number(formData.totalSalesPrice) || 0) > 0
-                ? Number(formData.totalSalesPrice)
-                : salePrice
-                    + (Number(formData.governmentFees) || 0)
-                    + (Number(formData.procDocFees) || 0)
-                    + (Number(formData.accessories) || 0)
-                    + (Number(formData.serviceContract) || 0)
-                    + (Number(formData.gap) || 0);
+            const totalSalesFromInputs = salePrice
+                + (Number(formData.governmentFees) || 0)
+                + (Number(formData.procDocFees) || 0)
+                + (Number(formData.accessories) || 0)
+                + (Number(formData.serviceContract) || 0)
+                + (Number(formData.gap) || 0)
+                + (Number(formData.totalTaxes) || 0);
+            const totalSales = (!isLease && !isCash)
+                ? totalSalesFromInputs
+                : ((Number(formData.totalSalesPrice) || 0) > 0 ? Number(formData.totalSalesPrice) : totalSalesFromInputs);
             document.getElementById('out-summaryTotalSalesPrice').innerText = formatCurrency(totalSales);
             const summaryRebateRow = document.getElementById('row-summaryRebate');
             document.getElementById('out-summaryRebate').innerText = formatCurrency(rebateValue);
@@ -575,9 +587,21 @@
             document.getElementById('out-summaryCashDown').innerText = formatCurrency(cashDownValue);
             if (isLease || isCash) summaryCashDownRow.classList.add('hidden-view');
             else summaryCashDownRow.classList.remove('hidden-view');
-            const computedAmountFinanced = totalSales - rebateValue - cashDownValue - (Number(formData.tradeEquity) || 0);
-            const amountFinanced = (Number(formData.amountFinanced) || 0) > 0 ? Number(formData.amountFinanced) : computedAmountFinanced;
+            const computedAmountFinanced = salePrice
+                - cashDownValue
+                - (Number(formData.tradeEquity) || 0)
+                + (Number(formData.governmentFees) || 0)
+                + (Number(formData.procDocFees) || 0)
+                + (Number(formData.accessories) || 0)
+                + (Number(formData.serviceContract) || 0)
+                + (Number(formData.gap) || 0)
+                + (Number(formData.totalTaxes) || 0);
+            const amountFinanced = (!isLease && !isCash) ? computedAmountFinanced : (Number(formData.amountFinanced) || 0);
             document.getElementById('out-amountFinanced').innerText = formatCurrency(amountFinanced);
+            const amountFinancedInput = document.getElementById('in-amountFinanced');
+            if (amountFinancedInput && !isLease && !isCash) {
+                amountFinancedInput.value = Math.round(amountFinanced);
+            }
             const amountFinancedRow = document.getElementById('row-amount-financed');
             if (isLease || isCash) amountFinancedRow.classList.add('hidden-view');
             else amountFinancedRow.classList.remove('hidden-view');
