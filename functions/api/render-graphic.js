@@ -61,12 +61,19 @@ const FIELD_LIMITS = {
   contact_phone:       30,
 };
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
+      ...CORS_HEADERS,
     },
   });
 }
@@ -136,6 +143,13 @@ function buildDeepLink(baseUrl, normalized) {
     themeVariant:      normalized.themeVariant,
   };
   return `${baseUrl}/?payload=${encodeURIComponent(JSON.stringify(payload))}`;
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
 }
 
 export async function onRequestPost(context) {
