@@ -635,10 +635,10 @@
             ctaWrap.innerHTML = '';
             ctaWrap.className = 'flex flex-col gap-1.5 mb-6';
 
-            const instrLine = document.createElement('p');
-            instrLine.className = 'text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 mb-1';
-            instrLine.innerText = 'Reply with A, B, or C';
-            ctaWrap.appendChild(instrLine);
+            const instrBar = document.createElement('div');
+            instrBar.className = 'flex items-center px-3 py-2.5 rounded-xl bg-[#1e4b82]/[0.07] border border-[#1e4b82]/20 mb-1';
+            instrBar.innerHTML = '<span class="text-[12px] font-black uppercase tracking-[0.08em] text-[#0f2846]">Text me back: A, B, or C</span>';
+            ctaWrap.appendChild(instrBar);
 
             const ctaLetters = ['A', 'B', 'C'];
             messageData.ctaOptions.slice(0, 3).forEach((cta, i) => {
