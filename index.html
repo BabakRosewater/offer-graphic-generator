@@ -118,10 +118,16 @@
                         <div class="col-span-2">
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Message Type</label>
                             <select id="msg-graphicType" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none bg-white">
-                                <option value="re_engagement">Re-engagement</option>
+                                <option value="re_engagement">Re Engagement</option>
                                 <option value="inventory_redirect">Inventory Redirect</option>
                                 <option value="status_update">Status Update</option>
                                 <option value="numbers_clarity">Numbers Clarity</option>
+                                <option value="confidence_message">Confidence Message</option>
+                                <option value="lifestyle_fit">Lifestyle Fit</option>
+                                <option value="final_decision">Final Decision</option>
+                                <option value="competitive_save">Competitive Save</option>
+                                <option value="trade_progress">Trade Progress</option>
+                                <option value="incentive_reframe">Incentive Reframe</option>
                             </select>
                         </div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Reason Badge</label><input type="text" id="msg-reasonBadge" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none" placeholder="No response after follow-up"/></div>
@@ -244,6 +250,48 @@
                 messageBody: 'I can break down payment, down payment, and term side by side so you can choose with confidence.',
                 ctaOptions: ['A) Show 0-down', 'B) Show lower payment', 'C) Explain totals'],
                 reasonBadge: 'Numbers clarification requested',
+            },
+            confidence_message: {
+                headline: "You're In Good Hands",
+                subheadline: 'Manager-backed support for your decision.',
+                messageBody: 'Our team can guide each step so the process stays fast, clear, and low-stress.',
+                ctaOptions: ['A) Lock next step', 'B) Ask a manager', 'C) Call now'],
+                reasonBadge: 'Needs reassurance',
+            },
+            lifestyle_fit: {
+                headline: "Let's Make Sure It Still Fits",
+                subheadline: 'Confirming this matches your priorities.',
+                messageBody: 'Let me confirm this vehicle still lines up with your driving needs and lifestyle before we move forward.',
+                ctaOptions: ['A) Review fit priorities', 'B) Compare trims', 'C) Set a quick call'],
+                reasonBadge: 'Re-establishing fit',
+            },
+            final_decision: {
+                headline: 'One Clear Path Forward',
+                subheadline: 'We can wrap this up quickly.',
+                messageBody: 'We can finalize details fast and make the final step simple and straightforward.',
+                ctaOptions: ['A) Finalize now', 'B) Confirm details', 'C) Call to complete'],
+                reasonBadge: 'Near final decision',
+            },
+            competitive_save: {
+                headline: 'Before You Decide Elsewhere',
+                subheadline: 'See our strongest value side by side.',
+                messageBody: 'I put together a concise comparison so you can choose with full confidence.',
+                ctaOptions: ['A) See value comparison', 'B) Review final offer', 'C) Talk with manager'],
+                reasonBadge: 'Comparing alternatives',
+            },
+            trade_progress: {
+                headline: 'Trade Progress Update',
+                subheadline: 'Your trade path and next move.',
+                messageBody: 'We can walk through trade value impact and the fastest path forward together.',
+                ctaOptions: ['A) Review trade impact', 'B) Update valuation', 'C) Schedule review'],
+                reasonBadge: 'Trade-in in progress',
+            },
+            incentive_reframe: {
+                headline: 'Updated Savings View',
+                subheadline: 'Current offers applied clearly.',
+                messageBody: 'I reworked the incentives to show the cleanest possible savings path for you.',
+                ctaOptions: ['A) See updated savings', 'B) Compare structures', 'C) Connect with manager'],
+                reasonBadge: 'Incentive update',
             },
         };
         const MESSAGE_DEFAULTS = {
@@ -513,16 +561,28 @@
         function renderMessageGraphic() {
             if (graphicMode !== 'message') return;
             const typeLabelMap = {
-                re_engagement: 'Re-Engagement',
+                re_engagement: 'Re Engagement',
                 inventory_redirect: 'Inventory Redirect',
                 status_update: 'Status Update',
                 numbers_clarity: 'Numbers Clarity',
+                confidence_message: 'Confidence Message',
+                lifestyle_fit: 'Lifestyle Fit',
+                final_decision: 'Final Decision',
+                competitive_save: 'Competitive Save',
+                trade_progress: 'Trade Progress',
+                incentive_reframe: 'Incentive Reframe',
             };
             const typeAccentMap = {
                 re_engagement: 'bg-emerald-500/20 text-emerald-50',
                 inventory_redirect: 'bg-amber-500/25 text-amber-50',
                 status_update: 'bg-sky-500/25 text-sky-50',
                 numbers_clarity: 'bg-violet-500/25 text-violet-50',
+                confidence_message: 'bg-blue-500/25 text-blue-50',
+                lifestyle_fit: 'bg-teal-500/25 text-teal-50',
+                final_decision: 'bg-rose-500/25 text-rose-50',
+                competitive_save: 'bg-orange-500/25 text-orange-50',
+                trade_progress: 'bg-cyan-500/25 text-cyan-50',
+                incentive_reframe: 'bg-fuchsia-500/25 text-fuchsia-50',
             };
             const shell = document.getElementById('msg-theme-shell');
             shell.className = 'rounded-2xl p-6 text-white min-h-[760px] flex flex-col';
@@ -1008,45 +1068,9 @@
 
         loadStaffDirectory();
         updateFormData(formData);
-
-        // Deep-link boot: POST /api/render-graphic passes ?payload=<json> to
-        // pre-populate the message builder with a contract-normalized graphic.
-        const _dlParam = new URLSearchParams(window.location.search).get('payload');
-        if (_dlParam) {
-            try {
-                const _dlData = JSON.parse(decodeURIComponent(_dlParam));
-                messageData = normalizeMessageData({
-                    graphicType:       _dlData.graphicType,
-                    reasonBadge:       _dlData.reasonBadge,
-                    customerFirstName: _dlData.customerFirstName,
-                    headline:          _dlData.headline,
-                    subheadline:       _dlData.subheadline,
-                    vehicleTitle:      _dlData.vehicleTitle,
-                    vehicleSubtitle:   _dlData.vehicleSubtitle,
-                    messageBody:       _dlData.messageBody,
-                    cta1: Array.isArray(_dlData.ctaOptions) ? (_dlData.ctaOptions[0] || '') : '',
-                    cta2: Array.isArray(_dlData.ctaOptions) ? (_dlData.ctaOptions[1] || '') : '',
-                    cta3: Array.isArray(_dlData.ctaOptions) ? (_dlData.ctaOptions[2] || '') : '',
-                    contactName:       _dlData.contactName,
-                    contactTitle:      _dlData.contactTitle,
-                    contactPhone:      _dlData.contactPhone,
-                    contactPhotoUrl:   _dlData.contactPhotoUrl,
-                    themeVariant:      _dlData.themeVariant,
-                });
-                syncMessageForm();
-                setViewState('review');
-                setGraphicMode('message');
-            } catch (_dlErr) {
-                // Malformed payload — fall through to default state
-                messageData = normalizeMessageData(MESSAGE_DEFAULTS);
-                syncMessageForm();
-                setGraphicMode('offer');
-            }
-        } else {
-            messageData = normalizeMessageData(MESSAGE_DEFAULTS);
-            syncMessageForm();
-            setGraphicMode('offer');
-        }
+        messageData = normalizeMessageData(MESSAGE_DEFAULTS);
+        syncMessageForm();
+        setGraphicMode('offer');
     </script>
 </body>
 </html>
