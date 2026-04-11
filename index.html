@@ -140,7 +140,8 @@
                         <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">CTA 1</label><input type="text" id="msg-cta1" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
                         <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">CTA 2</label><input type="text" id="msg-cta2" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">CTA 3 (Optional)</label><input type="text" id="msg-cta3" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
-                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Name</label><input type="text" id="msg-contactName" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
+                        <div class="col-span-2 pt-4 border-t border-slate-100"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Staff Contact</label><select id="msg-staffContact" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none bg-white"><option value="">Auto / Keep current payload values</option></select></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Name</label><input type="text" id="msg-contactName" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Title</label><input type="text" id="msg-contactTitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Phone</label><input type="text" id="msg-contactPhone" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Photo URL</label><input type="text" id="msg-contactPhotoUrl" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
@@ -294,6 +295,19 @@
                 reasonBadge: 'Incentive update',
             },
         };
+        const MSG_STAFF_DIRECTORY = [
+            { name: "Babak Mohammadi", title: "General Manager", phone: "(406) 740-6631", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/a3444e3998714ed1a90de9fd8f0bd418.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Joshua Brandenburg", title: "General Sales Manager", phone: "(406) 740-6632", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/0053884c16ca4e7bb858a6944f503fe6.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Brian Cook", title: "Finance Manager", phone: "(406) 740-6633", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/e1b2ebe14a774290bec6325230e46d4c.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Veronica Nekrassoff", title: "Sales Advisor", phone: "(406) 740-6635", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/647955dc1ba04485aadb03aa96ee0e88.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Brock Cross", title: "Sales Manager", phone: "(406) 740-6636", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/2fade3cdd6c9468e99767d8255d81428.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Dean Armand", title: "Sales Advisor", phone: "(406) 740-6637", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/2b4f15041f7b4120bfbb45b780678777.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Brittany Smith", title: "Sales Advisor", phone: "(406) 740-6635", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/d39391a5f563419c85ae90d949e8593b.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Valorie Urban", title: "Sales Advisor", phone: "(406) 740-6636", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/a7d85dbeeb084071821a2de93bc5ad67.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Brandon Ullom", title: "Sales Advisor", phone: "(406) 740-6639", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/a9f4da81d6fb4f79a54bb667259f503c.jpg?impolicy=downsize&w=280&h=280" },
+            { name: "Rob Vanderbeek", title: "Sales Advisor", phone: "(406) 740-6641", photo: "https://pictures.dealer.com/c/clarkhyundaimt/1234/c3cd854c0f3d478d912a109488ead236.jpg?impolicy=downsize&w=280&h=280" },
+        ];
+
         const MESSAGE_DEFAULTS = {
             graphicType: 're_engagement',
             reasonBadge: MESSAGE_TEMPLATE_DEFAULTS.re_engagement.reasonBadge,
@@ -538,6 +552,8 @@
         }
 
         function syncMessageForm() {
+            const staffContactEl = document.getElementById('msg-staffContact');
+            if (staffContactEl) staffContactEl.value = '';
             const map = {
                 'msg-graphicType': messageData.graphicType,
                 'msg-reasonBadge': messageData.reasonBadge,
@@ -1075,6 +1091,36 @@
                 transactionType: '', vehicleCondition: ''
             });
         });
+
+        // Populate Staff Contact dropdown for message graphic
+        (function initMsgStaffContact() {
+            const sel = document.getElementById('msg-staffContact');
+            if (!sel) return;
+            MSG_STAFF_DIRECTORY.forEach((person) => {
+                const opt = document.createElement('option');
+                opt.value = person.name;
+                opt.textContent = `${person.name} \u2022 ${person.title}`;
+                sel.appendChild(opt);
+            });
+            sel.addEventListener('change', () => {
+                const key = sel.value;
+                if (!key) return; // Auto — keep current values untouched
+                const person = MSG_STAFF_DIRECTORY.find((p) => p.name === key);
+                if (!person) return;
+                document.getElementById('msg-contactName').value = person.name;
+                document.getElementById('msg-contactTitle').value = person.title;
+                document.getElementById('msg-contactPhone').value = person.phone;
+                document.getElementById('msg-contactPhotoUrl').value = person.photo;
+                messageData = normalizeMessageData({
+                    ...messageData,
+                    contactName: person.name,
+                    contactTitle: person.title,
+                    contactPhone: person.phone,
+                    contactPhotoUrl: person.photo,
+                });
+                renderMessageGraphic();
+            });
+        })();
 
         loadStaffDirectory();
         updateFormData(formData);
