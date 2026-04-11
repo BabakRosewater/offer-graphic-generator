@@ -1008,9 +1008,45 @@
 
         loadStaffDirectory();
         updateFormData(formData);
-        messageData = normalizeMessageData(MESSAGE_DEFAULTS);
-        syncMessageForm();
-        setGraphicMode('offer');
+
+        // Deep-link boot: POST /api/render-graphic passes ?payload=<json> to
+        // pre-populate the message builder with a contract-normalized graphic.
+        const _dlParam = new URLSearchParams(window.location.search).get('payload');
+        if (_dlParam) {
+            try {
+                const _dlData = JSON.parse(decodeURIComponent(_dlParam));
+                messageData = normalizeMessageData({
+                    graphicType:       _dlData.graphicType,
+                    reasonBadge:       _dlData.reasonBadge,
+                    customerFirstName: _dlData.customerFirstName,
+                    headline:          _dlData.headline,
+                    subheadline:       _dlData.subheadline,
+                    vehicleTitle:      _dlData.vehicleTitle,
+                    vehicleSubtitle:   _dlData.vehicleSubtitle,
+                    messageBody:       _dlData.messageBody,
+                    cta1: Array.isArray(_dlData.ctaOptions) ? (_dlData.ctaOptions[0] || '') : '',
+                    cta2: Array.isArray(_dlData.ctaOptions) ? (_dlData.ctaOptions[1] || '') : '',
+                    cta3: Array.isArray(_dlData.ctaOptions) ? (_dlData.ctaOptions[2] || '') : '',
+                    contactName:       _dlData.contactName,
+                    contactTitle:      _dlData.contactTitle,
+                    contactPhone:      _dlData.contactPhone,
+                    contactPhotoUrl:   _dlData.contactPhotoUrl,
+                    themeVariant:      _dlData.themeVariant,
+                });
+                syncMessageForm();
+                setViewState('review');
+                setGraphicMode('message');
+            } catch (_dlErr) {
+                // Malformed payload — fall through to default state
+                messageData = normalizeMessageData(MESSAGE_DEFAULTS);
+                syncMessageForm();
+                setGraphicMode('offer');
+            }
+        } else {
+            messageData = normalizeMessageData(MESSAGE_DEFAULTS);
+            syncMessageForm();
+            setGraphicMode('offer');
+        }
     </script>
 </body>
 </html>
