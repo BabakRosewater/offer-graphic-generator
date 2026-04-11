@@ -144,7 +144,7 @@
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Title</label><input type="text" id="msg-contactTitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Phone</label><input type="text" id="msg-contactPhone" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Photo URL</label><input type="text" id="msg-contactPhotoUrl" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none"/></div>
-                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Theme Variant</label><select id="msg-themeVariant" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none bg-white"><option value="classic">Classic</option><option value="night">Night</option><option value="accent">Accent</option></select></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Theme Variant</label><select id="msg-themeVariant" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 outline-none bg-white"><option value="default">Default</option><option value="soft">Soft</option><option value="recovery">Recovery</option><option value="confidence">Confidence</option><option value="premium">Premium</option><option value="urgent">Urgent</option></select></div>
                     </form>
                 </div>
                 <div class="p-4 bg-slate-50 border-t border-slate-100">
@@ -307,7 +307,7 @@
             contactTitle: 'Sales Advisor',
             contactPhone: '(406) 740-6635',
             contactPhotoUrl: '',
-            themeVariant: 'classic',
+            themeVariant: 'default',
             customerFirstName: '',
         };
         let messageData = { ...MESSAGE_DEFAULTS };
@@ -331,10 +331,14 @@
         let staffDirectory = [];
 
         function normalizeMessageData(raw = {}) {
-            const ctaOptions = [raw.cta1, raw.cta2, raw.cta3]
+            const ctaFromArray = Array.isArray(raw.ctaOptions)
+                ? raw.ctaOptions.map((x) => String(x || '').trim()).filter(Boolean).slice(0, 3)
+                : [];
+            const ctaFromFields = [raw.cta1, raw.cta2, raw.cta3]
                 .map((x) => String(x || '').trim())
                 .filter(Boolean)
                 .slice(0, 3);
+            const ctaOptions = ctaFromArray.length ? ctaFromArray : ctaFromFields;
             const templateDefaults = MESSAGE_TEMPLATE_DEFAULTS[String(raw.graphicType || MESSAGE_DEFAULTS.graphicType)] || MESSAGE_TEMPLATE_DEFAULTS.re_engagement;
             return {
                 graphicType: String(raw.graphicType || MESSAGE_DEFAULTS.graphicType),
@@ -586,9 +590,15 @@
             };
             const shell = document.getElementById('msg-theme-shell');
             shell.className = 'rounded-2xl p-6 text-white min-h-[760px] flex flex-col';
-            if (messageData.themeVariant === 'night') shell.classList.add('bg-gradient-to-br', 'from-slate-900', 'to-[#111827]');
-            else if (messageData.themeVariant === 'accent') shell.classList.add('bg-gradient-to-br', 'from-[#1e4b82]', 'to-[#2563eb]');
-            else shell.classList.add('bg-gradient-to-br', 'from-[#1e4b82]', 'to-[#0f2846]');
+            const themeStyleMap = {
+                'default':    ['bg-gradient-to-br', 'from-[#1e4b82]', 'to-[#0f2846]'],
+                'soft':       ['bg-gradient-to-br', 'from-slate-600', 'to-slate-800'],
+                'recovery':   ['bg-gradient-to-br', 'from-slate-900', 'to-[#111827]'],
+                'confidence': ['bg-gradient-to-br', 'from-[#1e4b82]', 'to-[#2563eb]'],
+                'premium':    ['bg-gradient-to-br', 'from-slate-800', 'to-slate-950'],
+                'urgent':     ['bg-gradient-to-br', 'from-red-800', 'to-red-950'],
+            };
+            shell.classList.add(...(themeStyleMap[messageData.themeVariant] || themeStyleMap['default']));
 
             const typeChip = document.getElementById('msg-type-chip');
             typeChip.className = `mt-2 inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${typeAccentMap[messageData.graphicType] || 'bg-white/20 text-white'}`;
@@ -1068,9 +1078,23 @@
 
         loadStaffDirectory();
         updateFormData(formData);
-        messageData = normalizeMessageData(MESSAGE_DEFAULTS);
-        syncMessageForm();
-        setGraphicMode('offer');
+        (function bootFromUrl() {
+            const rawPayload = new URLSearchParams(window.location.search).get('payload');
+            if (rawPayload) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(rawPayload));
+                    messageData = normalizeMessageData(decoded);
+                    syncMessageForm();
+                    setGraphicMode('message');
+                    return;
+                } catch (e) {
+                    console.warn('[offer-graphic] Failed to parse ?payload=', e);
+                }
+            }
+            messageData = normalizeMessageData(MESSAGE_DEFAULTS);
+            syncMessageForm();
+            setGraphicMode('offer');
+        })();
     </script>
 </body>
 </html>
