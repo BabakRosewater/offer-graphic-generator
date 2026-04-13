@@ -648,8 +648,8 @@
                 const row = document.createElement('div');
                 row.className = 'flex items-center gap-3 py-1';
                 const badge = document.createElement('span');
-                badge.className = 'w-6 h-6 rounded-full bg-[#1e4b82] text-white text-[11px] font-black shrink-0 text-center leading-6';
-                badge.innerText = letter;
+                badge.className = 'grid place-items-center w-6 h-6 rounded-full bg-[#1e4b82] shrink-0';
+                badge.innerHTML = '<span class="text-white text-[11px] font-black leading-none relative -top-px">' + letter + '</span>';
                 const text = document.createElement('span');
                 text.className = 'text-[#0f2846] font-bold text-sm leading-snug';
                 text.innerText = displayText;
