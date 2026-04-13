@@ -636,8 +636,8 @@
             ctaWrap.className = 'flex flex-col gap-1.5 mb-6';
 
             const instrBar = document.createElement('div');
-            instrBar.className = 'flex items-center justify-center px-4 py-2.5 rounded-xl bg-[#0f2846] mb-1';
-            instrBar.innerHTML = '<span class="text-[12px] font-black uppercase tracking-[0.1em] text-white/90">TEXT BACK: <span class="text-amber-400">"A"</span>, <span class="text-amber-400">"B"</span>, OR <span class="text-amber-400">"C"</span></span>';
+            instrBar.className = 'flex items-center justify-center px-4 py-2.5 rounded-lg bg-[#0f2846] mb-1';
+            instrBar.innerHTML = '<span class="text-[13px] font-black uppercase tracking-[0.1em] text-white/90">TEXT BACK: "<span class="text-amber-400">A</span>", "<span class="text-amber-400">B</span>", OR "<span class="text-amber-400">C</span>"</span>';
             ctaWrap.appendChild(instrBar);
 
             const ctaLetters = ['A', 'B', 'C'];
@@ -648,10 +648,10 @@
                 const row = document.createElement('div');
                 row.className = 'flex items-center gap-3 py-1';
                 const badge = document.createElement('span');
-                badge.className = 'w-6 h-6 rounded-full bg-[#0f2846]/10 border border-[#0f2846]/25 text-[#0f2846] text-[11px] font-black flex items-center justify-center shrink-0';
+                badge.className = 'w-6 h-6 rounded-full bg-[#1e4b82] text-white text-[11px] font-black flex items-center justify-center shrink-0';
                 badge.innerText = letter;
                 const text = document.createElement('span');
-                text.className = 'text-[#0f2846] font-semibold text-sm leading-snug';
+                text.className = 'text-[#0f2846] font-bold text-sm leading-snug';
                 text.innerText = displayText;
                 row.appendChild(badge);
                 row.appendChild(text);
