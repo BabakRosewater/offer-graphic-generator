@@ -2,6 +2,12 @@
 
 Cloudflare Pages single-page app for turning purchase agreement uploads into reviewable offer graphic data.
 
+## Documentation
+
+For a deeper architecture and API reference, see:
+
+- [`docs/OFFER_GRAPHIC_GENERATOR_DOCUMENTATION.md`](docs/OFFER_GRAPHIC_GENERATOR_DOCUMENTATION.md)
+
 ## Architecture (current behavior)
 
 - **Frontend (`index.html`)**
